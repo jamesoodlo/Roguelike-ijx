@@ -8,7 +8,7 @@ public class BaseStatus : ScriptableObject
 {
     public float maxHealth;
     public int maxStamina;
-    public int maxBlocked;
-    public int attackDamage; 
+    public float maxBlocked;
+    public float attackDamage; 
 }
 

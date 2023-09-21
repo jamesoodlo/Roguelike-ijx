@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class EnemyMelee : MonoBehaviour
 {
@@ -19,18 +20,32 @@ public class EnemyMelee : MonoBehaviour
     public LayerMask detectionLayer;
     public PlayerController target;
 
+    [Header("Combat")]
+    public GameObject textParry;
+    public bool isParried;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
         navAi = GetComponent<UnityEngine.AI.NavMeshAgent>();
 
+        textParry.SetActive(false);
         navAi.stoppingDistance = maximumAggroRadius;
     }
  
     void Update()
     {
         IdleState();
+
+        if(isParried)
+        {
+            textParry.SetActive(true);
+        }
+        else
+        {
+            textParry.SetActive(false);
+        }
     }
 
     private void IdleState()
@@ -107,28 +122,18 @@ public class EnemyMelee : MonoBehaviour
         }
     }
 
-    private void Knockback()
+    public void Knockback()
     {
         float knockBackForce = 10;
+        
         rb.AddForce(-transform.forward * knockBackForce, ForceMode.Impulse);
+
+        StartCoroutine(Reset());
     }
 
     IEnumerator Reset(float delay = 0.1f)
     {
         yield return new WaitForSeconds(delay);
         rb.velocity = Vector3.zero;
-    }
-
-    private void OnTriggerEnter(Collider other) 
-    {
-        if(other.gameObject.tag == "Weapons")
-        {
-            Knockback();
-            StartCoroutine(Reset());
-        }    
-        else
-        {
-            
-        }
     }
 }

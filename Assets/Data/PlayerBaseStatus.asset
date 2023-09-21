@@ -15,4 +15,4 @@ MonoBehaviour:
   maxHealth: 100
   maxStamina: 5
   maxBlocked: 30
-  attackDamage: 10
+  attackDamage: 15

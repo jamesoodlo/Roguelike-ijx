@@ -10,12 +10,8 @@ public class AnimationHandle : MonoBehaviour
     PlayerStats stats;
     Rigidbody rb;
 
-    private string moveDirection;
-
+    public Collider playerCollider;
     public GameObject[] slashObj;
-
-    [Header("Combat")]
-    public Collider DamageCollider;
 
     void Start()
     {
@@ -25,7 +21,6 @@ public class AnimationHandle : MonoBehaviour
         anim = GetComponent<Animator>(); 
         rb = GetComponent<Rigidbody>();
 
-        DamageCollider.enabled = false;
         DisabledSlashFx();
         DisabledSlashFx2();
         DisabledSlashFx3();
@@ -59,15 +54,24 @@ public class AnimationHandle : MonoBehaviour
         anim.SetTrigger("isRolling");
     }
 
+    public void BarrierAnimation()
+    {
+        anim.SetTrigger("Skill2");
+    }
+
 #region AnimationEvent
     public void EnabledDamageCollider()
     {
-        DamageCollider.enabled = true;
+        Weapons weapon;
+        weapon = GetComponentInChildren<Weapons>();
+        weapon.onAttack = true;
     }
 
     public void DisabledDamageCollider()
     {
-        DamageCollider.enabled = false;
+        Weapons weapon;
+        weapon = GetComponentInChildren<Weapons>();
+        weapon.onAttack = false;
     }
 
     public void ResetAttack()
@@ -112,12 +116,17 @@ public class AnimationHandle : MonoBehaviour
 
     public void EnabledPlayerCollider()
     {
-        playerControll.collider.enabled = true;
+        playerCollider.enabled = true;
     }
 
     public void DisabledPlayerCollider()
     {
-        playerControll.collider.enabled = false;
+        playerCollider.enabled = false;
+    }
+
+    public void DontMove()
+    {
+        inputHandle.move = Vector2.zero;
     }
 #endregion
 }

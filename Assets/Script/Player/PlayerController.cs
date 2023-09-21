@@ -10,8 +10,6 @@ public class PlayerController : MonoBehaviour
     PlayerStats stats;
     Rigidbody rb;
 
-    public Collider collider;
-
     [Header("Movement")]
     public float speed;
     public float rotationSpeed = 10f;
@@ -21,16 +19,26 @@ public class PlayerController : MonoBehaviour
     public float rollCooldown;
     public float rollingTime;
     public bool isRolling = false;
-    public bool canRoll = true;
+    private bool canRoll = true;
 
-    [Header("Combat")]
+    [Header("Attack")]
     public bool isAttacking;
     public int currentAttack = 0;
     private float timeSinceAttack;
 
+    [Header("ฺBlock & Parry")]
+    public GameObject shieldObj;
     public bool isBlocking;
     public bool isParried;
     private float timeSinceBlock;
+
+    [Header("Skill Barrier")]
+    public GameObject barrierObj;
+    public bool isBarrier;
+    public float barrierTime = 3.0f;
+    public float maxBarrierCdTime = 10.0f;
+    public float barrierCdTime;
+    public bool canBarrier = true;
 
     void Start()
     {
@@ -38,6 +46,10 @@ public class PlayerController : MonoBehaviour
         animHandle = GetComponent<AnimationHandle>();
         stats = GetComponent<PlayerStats>();
         rb = GetComponent<Rigidbody>();
+
+        barrierObj.SetActive(false);
+        shieldObj.SetActive(false);
+        barrierCdTime = maxBarrierCdTime;
     }
 
     void Update()
@@ -46,27 +58,19 @@ public class PlayerController : MonoBehaviour
 
         Attack();
         Block();
+        barrierSkill(); 
 
-        if(!isBlocking)
-        {
-            movePlayer();
-        }
-        else
+        if(isBlocking || isAttacking)
         {
             //if blocking cant move
         }
-
-        if(isAttacking)
-        {
-            inputHandle.move = Vector2.zero;
-        }
         else
         {
-            //if not attacking can move
+            movePlayer();    
         }
-        
 
         if(stats.currentStamina > 0) Rolling(); 
+        
 
     }
 
@@ -102,7 +106,7 @@ public class PlayerController : MonoBehaviour
                 animHandle.RollAnimation();
                 if(!canRoll)
                 {
-                    StartCoroutine(cdTime());
+                    StartCoroutine(rollCd());
                     StartCoroutine(rollingTimer());
                 }
             }
@@ -130,6 +134,7 @@ public class PlayerController : MonoBehaviour
                 AttackForward();
                 
                 inputHandle.move = Vector2.zero;
+                
                 if (currentAttack > 3)
                     currentAttack = 1;
 
@@ -151,7 +156,7 @@ public class PlayerController : MonoBehaviour
     }
 
     public void AttackForward()
-    {
+    {        
         float forwardSpeed = 3.5f;
 
         rb.AddForce(transform.forward * forwardSpeed, ForceMode.Impulse);
@@ -165,8 +170,9 @@ public class PlayerController : MonoBehaviour
         {
             timeSinceBlock += Time.deltaTime;
             isBlocking = true;
-            
-            if(timeSinceBlock < 0.3f)
+            shieldObj.SetActive(true);
+                
+            if(timeSinceBlock < 0.25f)
             {
                 isParried = true;
             }
@@ -174,17 +180,71 @@ public class PlayerController : MonoBehaviour
             {
                 isParried = false;
             }
-            
+
+            if(timeSinceBlock > 3.0f)
+            {
+                isBlocking = false;
+                inputHandle.block = false;
+                shieldObj.SetActive(false);
+            }
+
+            if(stats.currentBlocked <= 0)
+            {
+                timeSinceBlock = 0;
+                isBlocking = false;
+                inputHandle.block = false;
+                shieldObj.SetActive(false);
+            }
         }
         else
         {
             timeSinceBlock = 0;
             isParried = false;
             isBlocking = false;
+            shieldObj.SetActive(false);
         }
     }
 #endregion
     
+    private void barrierSkill()
+    {
+        if(!canBarrier)  barrierCdTime -= Time.deltaTime;
+        if(isBarrier) barrierTime -= Time.deltaTime;
+
+        if(barrierTime <= 0) 
+        {
+            barrierTime = 0;
+            barrierObj.SetActive(false);
+            isBarrier = false;
+        }
+
+        if(barrierCdTime <= 0) 
+        {
+            canBarrier = true;
+            barrierCdTime = maxBarrierCdTime;
+        }
+
+        if(canBarrier) barrierTime = 3.0f;
+
+        if(inputHandle.skillE && canBarrier && !isAttacking && barrierCdTime == maxBarrierCdTime)
+        {
+            if(canBarrier)
+            {
+                isBarrier = true;
+                
+                barrierObj.SetActive(true);
+
+                canBarrier = false;
+
+                animHandle.BarrierAnimation();
+            }
+        }
+        else
+        {
+            
+        }
+    }  
+
     private IEnumerator rollingTimer()
     {
         isRolling = true;
@@ -193,7 +253,7 @@ public class PlayerController : MonoBehaviour
         rb.velocity = Vector3.zero;
     }
 
-    private IEnumerator cdTime()
+    private IEnumerator rollCd()
     {
         canRoll = false;
         yield return new WaitForSeconds(rollCooldown);

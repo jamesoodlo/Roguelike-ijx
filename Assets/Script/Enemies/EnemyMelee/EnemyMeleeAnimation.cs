@@ -6,17 +6,19 @@ public class EnemyMeleeAnimation : MonoBehaviour
 {
     Animator anim;
     Rigidbody rb;
+    EnemyMelee enemyMelee;
     UnityEngine.AI.NavMeshAgent navAi;
-
-    public Collider DamageCollider;
+    EnemyWeapon enemyWeapon;
 
     void Start()
     {
         anim = GetComponent<Animator>();
         rb = GetComponentInParent<Rigidbody>();
+        enemyMelee = GetComponentInParent<EnemyMelee>();
         navAi = GetComponentInParent<UnityEngine.AI.NavMeshAgent>();
+        enemyWeapon = GetComponentInChildren<EnemyWeapon>();
 
-        DamageCollider.enabled = false;
+        enemyWeapon.onAttack = false;
     }
 
     void Update()
@@ -39,12 +41,17 @@ public class EnemyMeleeAnimation : MonoBehaviour
 
     public void EnabledDamageCollider()
     {
-        DamageCollider.enabled = true;
+        enemyWeapon.onAttack = true;
     }
 
     public void DisabledDamageCollider()
     {
-        DamageCollider.enabled = false;
+        enemyWeapon.onAttack = false;
+    }
+
+    public void EndParried()
+    {
+        enemyMelee.isParried = false;
     }
 #endregion
 }

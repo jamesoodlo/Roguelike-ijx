@@ -10,8 +10,9 @@ public class PlayerStats : MonoBehaviour
     AnimationHandle animHandle;
     PlayerController playerControll;
 
+    EnemyWeapon enemyWeapon;
+
     public BaseStatus playerDataStat;
-    public EnemyBaseStatus enemyDataStat;
 
     public float currentHealth;
     public int currentStamina;
@@ -21,8 +22,8 @@ public class PlayerStats : MonoBehaviour
     
     private bool isHurt = false;
 
-    public int currentBlocked;
-    public int regenBlockedRate = 1;
+    public float currentBlocked;
+    public float regenBlockedRate = 1;
     private float timeSinceLastRegenBlocked = 0f;
 
     void Start()
@@ -54,10 +55,10 @@ public class PlayerStats : MonoBehaviour
 
         }
 
-        if(currentHealth < 0)
-        {
-            currentHealth = 0;
-        }
+        if(currentHealth < 0) currentHealth = 0;
+        if(currentHealth > playerDataStat.maxHealth) currentHealth = playerDataStat.maxHealth; 
+
+        enemyWeapon = FindObjectOfType<EnemyWeapon>();
     }
 
     public void RegenrateStamina()
@@ -83,7 +84,7 @@ public class PlayerStats : MonoBehaviour
 
             if (timeSinceLastRegenBlocked >= 2.0f)
             {
-                int regenAmount = Mathf.Min(playerDataStat.maxBlocked - currentBlocked, regenBlockedRate);
+                float regenAmount = Mathf.Min(playerDataStat.maxBlocked - currentBlocked, regenBlockedRate);
                 currentBlocked += regenAmount;
                 timeSinceLastRegenBlocked = 0f;
             }
@@ -138,7 +139,7 @@ public class PlayerStats : MonoBehaviour
             staminaPoint[1].SetActive(false);
             staminaPoint[2].SetActive(false);
             staminaPoint[3].SetActive(false);
-             staminaPoint[4].SetActive(false);
+            staminaPoint[4].SetActive(false);
         }
     }
 
@@ -170,30 +171,70 @@ public class PlayerStats : MonoBehaviour
     {
         if(other.gameObject.tag == "EnemyDmg")
         {
-            if(playerControll.isBlocking)
-            {
-                currentHealth -= enemyDataStat.attackDamage - (enemyDataStat.attackDamage * 50 /100);
-                currentBlocked -= enemyDataStat.attackDamage;
+            if(playerControll.isBlocking && enemyWeapon.onAttack && !playerControll.isParried)
+            {  
+                currentHealth -= enemyWeapon.damage * 50 /100;
+                currentBlocked -= enemyWeapon.damage;
 
                 float knockbackSpeed = 4.5f;
                 rb.AddForce(-transform.forward * knockbackSpeed, ForceMode.Impulse);
 
+                anim.Play("Blocked");
+                
                 StartCoroutine(ResetKnockBack());
             }
-            else if(playerControll.isParried)
+            else if(enemyWeapon.onAttack)
             {
-                //no dmg
+                currentHealth -= enemyWeapon.damage;
+                GetHurt();
             }
-            else if(playerControll.isRolling)
+            else if(playerControll.isBarrier && enemyWeapon.onAttack)
+            {
+                currentHealth -= enemyWeapon.damage * 80 / 100;
+            }
+            else if(playerControll.isRolling && enemyWeapon.onAttack || playerControll.isParried && enemyWeapon.onAttack)
             {
                 //no dmg
             }
             else
             {
-                currentHealth -= enemyDataStat.attackDamage;
-                GetHurt();
+                //no dmg
             }
             
-        }    
+        }
+        else
+        {
+            //no dmg
+        }
+
+        if(other.gameObject.tag == "BulletEnemy")
+        {
+            if(playerControll.isBarrier)
+            {
+                //no dmg
+            }
+            else if(playerControll.isBlocking)
+            {
+                currentBlocked -= other.GetComponent<bullet>().damage;
+                anim.Play("Blocked");
+            }
+            else
+            {
+                currentHealth -= other.GetComponent<bullet>().damage;
+            }
+        } 
+        else
+        {
+            //no dmg
+        }
     }
+
+    private void OnTriggerStay(Collider other) 
+    {
+        if(other.gameObject.tag == "Heal")
+        {
+            currentHealth += 3.5f * Time.deltaTime;
+        }   
+    }
+
 }

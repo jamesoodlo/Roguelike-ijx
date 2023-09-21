@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class bullet : MonoBehaviour
 {
+    public EnemyBaseStatus enemyDataStat;
+    public float damage;
     public float Speed = 0.1f;
     public float SecondsUntilDestroy = 3f;
     float startTime;
@@ -11,6 +13,7 @@ public class bullet : MonoBehaviour
     void Start()
     {
         startTime = Time.time;
+        damage = enemyDataStat.attackDamage;
     }
 
     void Update()
@@ -24,7 +27,7 @@ public class bullet : MonoBehaviour
     }
 
     
-    IEnumerator DestroyBullet(float destroyTime = 0.0f)
+    IEnumerator DestroyBullet(float destroyTime = 0.01f)
     {
         yield return new WaitForSeconds(destroyTime);
         Destroy(this.gameObject);
@@ -32,9 +35,14 @@ public class bullet : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "Player")
+        if (other.gameObject.tag == "Player" || other.gameObject.tag == "Environment")
         {
             StartCoroutine(DestroyBullet());
+        }
+        
+        if(other.gameObject.tag == "Barrier" || other.gameObject.tag == "Shield")
+        {
+            Destroy(this.gameObject);
         }
     }
 }

@@ -7,5 +7,5 @@ public class EnemyBaseStatus : ScriptableObject
 {
     public float maxHealth;
     public float maxStamina;
-    public int attackDamage;
+    public float attackDamage;
 }

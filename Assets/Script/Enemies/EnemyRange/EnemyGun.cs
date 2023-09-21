@@ -1,13 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 using UnityEngine;
 
 public class EnemyGun : MonoBehaviour
 {
-    EnemyRange enemy;
-    EnemyStats enemyStats;
+    EnemyRange enemyRange;
+    EnemyRangeStats enemyRangeStat;
+
+    public Animator anim;
 
     [Header("Gun System")]
+    public Slider ammoBar;
+    public GameObject ammoText;
+    public bool isFiring = false;
+    public bool isReloading = false;
     public float fireRate = 0.4f;
     private float nextFire = 0.0f;
     public int maxAmmo = 8;
@@ -16,52 +23,54 @@ public class EnemyGun : MonoBehaviour
 
     void Start()
     {
-        enemy = GetComponentInParent<EnemyRange>();
-        enemyStats = GetComponentInParent<EnemyStats>();
+        enemyRange = GetComponentInParent<EnemyRange>();
+        enemyRangeStat = GetComponentInParent<EnemyRangeStats>();
+        ammoText.SetActive(false);
         ammo = maxAmmo;
     }
 
     void Update()
     {
-        if(enemyStats.currentHealth <= 0)
-        {
-            
-        }
-        else
-        {
-            if(enemy.target != null && Time.time > nextFire)
-            {
-                if(ammo > 0)
-                {
-                    nextFire = Time.time + fireRate;
-                    Fire();
-                }
-                else
-                {
-                    Reload();
-                }
-                
-            }
-        }
+        SetAmmoBar();
+        
+        anim.SetBool("Firing", isFiring);
+    }
+
+    public void SetAmmoBar()
+    {
+        ammoBar.maxValue = maxAmmo;
+        ammoBar.value = ammo;
     }
 
     public void Fire()
     {
-        Instantiate(bulletPrefab, transform.position, transform.rotation);
-        ammo -= 1;
-    }
+        ammoText.SetActive(false);
 
-    private void Reload()
-    {
-        if(ammo <= 0)
+        if(enemyRange.target != null && Time.time > nextFire)
         {
-            StartCoroutine(Reloading());
-        }
+            nextFire = Time.time + fireRate;
+
+            isFiring = true;
+
+            Instantiate(bulletPrefab, transform.position, transform.rotation);
+
+            ammo -= 1;
+        }        
     }
 
-    IEnumerator Reloading(float reloadTime = 3f)
+    public void Reload()
+    {
+        ammoText.SetActive(true);
+        anim.Play("Reload");
+        isReloading = true;
+        isFiring = false;
+        StartCoroutine(Reloading());
+    }
+
+    IEnumerator Reloading(float reloadTime = 3.08f)
     {
         yield return new WaitForSeconds(reloadTime);
         ammo = maxAmmo;
+        isReloading = false;
     }
 }

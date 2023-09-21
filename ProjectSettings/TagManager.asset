@@ -7,6 +7,12 @@ TagManager:
   - Weapons
   - EnemyDmg
   - BulletEnemy
+  - Environment
+  - Heal
+  - Enemy
+  - ItemBox
+  - Barrier
+  - Shield
   layers:
   - Default
   - TransparentFX
@@ -16,7 +22,7 @@ TagManager:
   - UI
   - Player
   - Neon
-  - 
+  - Enemies
   - 
   - 
   - 
