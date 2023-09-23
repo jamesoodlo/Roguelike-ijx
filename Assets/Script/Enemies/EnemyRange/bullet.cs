@@ -35,12 +35,12 @@ public class bullet : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "Player" || other.gameObject.tag == "Environment")
+        if (other.gameObject.tag == "Player")
         {
             StartCoroutine(DestroyBullet());
         }
         
-        if(other.gameObject.tag == "Barrier" || other.gameObject.tag == "Shield")
+        if(other.gameObject.tag == "Barrier" || other.gameObject.tag == "Shield" || other.gameObject.tag == "Environment")
         {
             Destroy(this.gameObject);
         }

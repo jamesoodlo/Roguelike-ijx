@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   maxStamina: 0
-  attackDamage: 5
+  attackDamage: 3.5
