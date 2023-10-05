@@ -8,6 +8,8 @@ public class EnemyRange : MonoBehaviour
     UnityEngine.AI.NavMeshAgent navAi;
     Rigidbody rb;
     EnemyGun gun;
+    private GameObject findPlayer;
+    private  PlayerController playerObj;
 
     private float timeSinceDodge;
 
@@ -33,6 +35,11 @@ public class EnemyRange : MonoBehaviour
         navAi = GetComponent<UnityEngine.AI.NavMeshAgent>();
 
         navAi.stoppingDistance = maximumAggroRadius;
+
+        findPlayer = GameObject.Find("Player");
+        playerObj = findPlayer.GetComponent<PlayerController>();
+
+        StartCoroutine(SetTarget());
     }
  
     void Update()
@@ -201,6 +208,12 @@ public class EnemyRange : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         rb.velocity = Vector3.zero;
+    }
+
+    IEnumerator SetTarget(float delay = 1.5f)
+    {
+        yield return new WaitForSeconds(delay);
+        target = playerObj;
     }
 
     private void OnTriggerEnter(Collider other) 

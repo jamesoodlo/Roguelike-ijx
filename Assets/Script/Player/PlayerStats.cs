@@ -22,9 +22,9 @@ public class PlayerStats : MonoBehaviour
     
     private bool isHurt = false;
 
-    public float currentBlocked;
-    public float regenBlockedRate = 1;
-    private float timeSinceLastRegenBlocked = 0f;
+    public float currentShield;
+    public float regenShieldRate = 1;
+    private float timeSinceLastRegenShield = 0f;
 
     void Start()
     {
@@ -36,14 +36,15 @@ public class PlayerStats : MonoBehaviour
 
         currentHealth = playerDataStat.maxHealth;
         currentStamina = playerDataStat.maxStamina;
-        currentBlocked = playerDataStat.maxBlocked;
+        currentShield = playerDataStat.maxShield;
     }
 
     void Update()
     {
         DrainStaminaPoint();
         RegenrateStamina();
-        RegenrateBlocked();
+        RegenrateShield();
+        ExpLevel();
 
         if(isHurt)
         {
@@ -56,6 +57,7 @@ public class PlayerStats : MonoBehaviour
         }
 
         if(currentHealth < 0) currentHealth = 0;
+        if(currentShield < 0) currentShield = 0;
         if(currentHealth > playerDataStat.maxHealth) currentHealth = playerDataStat.maxHealth; 
 
         enemyWeapon = FindObjectOfType<EnemyWeapon>();
@@ -76,17 +78,17 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    public void RegenrateBlocked()
+    public void RegenrateShield()
     { 
-        if (currentBlocked < playerDataStat.maxBlocked)
+        if (currentShield < playerDataStat.maxShield)
         {
-            timeSinceLastRegenBlocked += Time.deltaTime;
+            timeSinceLastRegenShield += Time.deltaTime;
 
-            if (timeSinceLastRegenBlocked >= 2.0f)
+            if (timeSinceLastRegenShield >= 2.0f)
             {
-                float regenAmount = Mathf.Min(playerDataStat.maxBlocked - currentBlocked, regenBlockedRate);
-                currentBlocked += regenAmount;
-                timeSinceLastRegenBlocked = 0f;
+                float regenAmount = Mathf.Min(playerDataStat.maxShield - currentShield, regenShieldRate);
+                currentShield += regenAmount;
+                timeSinceLastRegenShield = 0f;
             }
         }
     }
@@ -107,7 +109,7 @@ public class PlayerStats : MonoBehaviour
             staminaPoint[1].SetActive(true);
             staminaPoint[2].SetActive(true);
             staminaPoint[3].SetActive(true);
-             staminaPoint[4].SetActive(true);
+            staminaPoint[4].SetActive(true);
         }
         else if(currentStamina == 3)
         {
@@ -115,7 +117,7 @@ public class PlayerStats : MonoBehaviour
             staminaPoint[1].SetActive(false);
             staminaPoint[2].SetActive(true);
             staminaPoint[3].SetActive(true);
-             staminaPoint[4].SetActive(true);
+            staminaPoint[4].SetActive(true);
         }
         else if(currentStamina == 2)
         {
@@ -123,7 +125,7 @@ public class PlayerStats : MonoBehaviour
             staminaPoint[1].SetActive(false);
             staminaPoint[2].SetActive(false);
             staminaPoint[3].SetActive(true);
-             staminaPoint[4].SetActive(true);
+            staminaPoint[4].SetActive(true);
         }
         else if(currentStamina == 1)
         {
@@ -131,7 +133,7 @@ public class PlayerStats : MonoBehaviour
             staminaPoint[1].SetActive(false);
             staminaPoint[2].SetActive(false);
             staminaPoint[3].SetActive(false);
-             staminaPoint[4].SetActive(true);
+            staminaPoint[4].SetActive(true);
         }
         else
         {
@@ -147,11 +149,18 @@ public class PlayerStats : MonoBehaviour
     {
         anim.SetTrigger("Hurt");
 
-        float knockbackSpeed = 5.0f;
-        rb.AddForce(-transform.forward * knockbackSpeed, ForceMode.Impulse);
-
-        StartCoroutine(ResetKnockBack());
         StartCoroutine(HurtDontMove());
+    }
+
+    public void ExpLevel()
+    {
+        if(playerDataStat.exp >= playerDataStat.maxExp)
+        {
+            playerDataStat.level += 1;
+            playerDataStat.maxExp *= 2;
+            playerDataStat.canLvUp = true;
+            playerDataStat.exp = 0;
+        }
     }
 
     IEnumerator ResetKnockBack(float delay = 0.1f)
@@ -174,7 +183,7 @@ public class PlayerStats : MonoBehaviour
             if(playerControll.isBlocking && enemyWeapon.onAttack && !playerControll.isParried)
             {  
                 currentHealth -= enemyWeapon.damage * 50 /100;
-                currentBlocked -= enemyWeapon.damage;
+                currentShield -= enemyWeapon.damage;
 
                 float knockbackSpeed = 4.5f;
                 rb.AddForce(-transform.forward * knockbackSpeed, ForceMode.Impulse);
@@ -215,7 +224,7 @@ public class PlayerStats : MonoBehaviour
             }
             else if(playerControll.isBlocking)
             {
-                currentBlocked -= other.GetComponent<bullet>().damage;
+                currentShield -= other.GetComponent<bullet>().damage;
                 anim.Play("Blocked");
             }
             else
@@ -227,6 +236,16 @@ public class PlayerStats : MonoBehaviour
         {
             //no dmg
         }
+
+        if(other.gameObject.tag == "Exp")
+        {
+            playerDataStat.exp += 0.5f;
+        }
+
+        if(other.gameObject.tag == "Point")
+        {
+            playerDataStat.currentPoint += other.GetComponent<Point>().getPointValue;
+        }
     }
 
     private void OnTriggerStay(Collider other) 
@@ -234,7 +253,8 @@ public class PlayerStats : MonoBehaviour
         if(other.gameObject.tag == "Heal")
         {
             currentHealth += 3.5f * Time.deltaTime;
-        }   
+        }
+    
     }
 
 }

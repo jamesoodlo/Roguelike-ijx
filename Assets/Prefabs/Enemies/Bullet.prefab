@@ -145,5 +145,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyDataStat: {fileID: 11400000, guid: 86ffd35de861b494dac6b8a81d4b5d48, type: 2}
   damage: 0
-  Speed: 0.05
+  Speed: 0.025
   SecondsUntilDestroy: 3

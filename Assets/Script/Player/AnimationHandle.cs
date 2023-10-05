@@ -128,5 +128,15 @@ public class AnimationHandle : MonoBehaviour
     {
         inputHandle.move = Vector2.zero;
     }
+
+    public void EnebledSlashSkill()
+    {
+        if(playerControll.isSlash) playerControll.onSlash = true;
+    }
+
+    public void DisabledSlashSkill()
+    {
+        playerControll.onSlash = false;
+    }
 #endregion
 }

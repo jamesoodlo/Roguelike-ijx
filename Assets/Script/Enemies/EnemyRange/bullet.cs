@@ -40,7 +40,7 @@ public class bullet : MonoBehaviour
             StartCoroutine(DestroyBullet());
         }
         
-        if(other.gameObject.tag == "Barrier" || other.gameObject.tag == "Shield" || other.gameObject.tag == "Environment")
+        if(other.gameObject.tag == "Barrier" || other.gameObject.tag == "Shield" || other.gameObject.tag == "Environment" || other.gameObject.tag == "SlashProjectile")
         {
             Destroy(this.gameObject);
         }

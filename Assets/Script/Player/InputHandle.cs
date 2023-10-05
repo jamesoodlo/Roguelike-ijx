@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class InputHandle : MonoBehaviour
 {
-    public bool attack, dash, escape, block, skillQ, skillE;
+    public bool attack, dash, block, skillQ, skillE, interaction;
     public Vector2 move, mouseLook;
     public Vector3 rotationTarget;
 
@@ -48,22 +48,6 @@ public class InputHandle : MonoBehaviour
         if(context.canceled)
         {
             block = false;
-        }
-    }
-
-    public void OnEscape(InputAction.CallbackContext context)
-    {
-        if(context.started)
-        {
-            escape = true;
-        }
-        if(context.performed)
-        {
-            escape = true;
-        }
-        if(context.canceled)
-        {
-            escape = false;
         }
     }
 
@@ -112,6 +96,22 @@ public class InputHandle : MonoBehaviour
         if(context.canceled)
         {
             skillE = false;
+        }
+    }
+
+    public void OnInteraction(InputAction.CallbackContext context)
+    {
+        if(context.started)
+        {
+            interaction = true;
+        }
+        if(context.performed)
+        {
+            interaction = true;
+        }
+        if(context.canceled)
+        {
+            interaction = false;
         }
     }
 }

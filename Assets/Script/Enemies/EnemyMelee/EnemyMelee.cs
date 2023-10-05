@@ -8,6 +8,8 @@ public class EnemyMelee : MonoBehaviour
     Animator anim;
     UnityEngine.AI.NavMeshAgent navAi;
     Rigidbody rb;
+    private GameObject findPlayer;
+    private  PlayerController playerObj;
 
     [Header("A.I. Settings")]
     public float detectionRadius = 5;
@@ -19,6 +21,7 @@ public class EnemyMelee : MonoBehaviour
     public float viewableAngle;
     public LayerMask detectionLayer;
     public PlayerController target;
+    
 
     [Header("Combat")]
     public GameObject textParry;
@@ -32,6 +35,11 @@ public class EnemyMelee : MonoBehaviour
 
         textParry.SetActive(false);
         navAi.stoppingDistance = maximumAggroRadius;
+
+        findPlayer = GameObject.Find("Player");
+        playerObj = findPlayer.GetComponent<PlayerController>();
+
+        StartCoroutine(SetTarget());
     }
  
     void Update()
@@ -135,5 +143,11 @@ public class EnemyMelee : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         rb.velocity = Vector3.zero;
+    }
+
+    IEnumerator SetTarget(float delay = 1.5f)
+    {
+        yield return new WaitForSeconds(delay);
+        target = playerObj;
     }
 }

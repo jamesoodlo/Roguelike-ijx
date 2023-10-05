@@ -12,6 +12,13 @@ public class EnemyMeleeStats : MonoBehaviour
 
     public EnemyBaseStatus enemyDataStat;
     public float currentHealth;
+
+    [Header("Exp & Point")]
+    private int[] dropRate = {0, 1, 2}; 
+    private int getDropRate;
+    public GameObject Point;
+    public GameObject Exp;
+    
     
     void Start()
     {
@@ -20,6 +27,7 @@ public class EnemyMeleeStats : MonoBehaviour
         healthBar = GetComponentInChildren<Slider>();
 
         currentHealth = enemyDataStat.maxHealth;
+        getDropRate = dropRate[Random.Range(0, dropRate.Length)];
     }
 
     void Update()
@@ -30,6 +38,10 @@ public class EnemyMeleeStats : MonoBehaviour
 
         if(currentHealth <= 0)
         {
+            Instantiate(Exp, transform.position, transform.rotation);
+
+            if(getDropRate == 0) Instantiate(Point, transform.position, transform.rotation);
+            
             Destroy(this.gameObject);
         }
     }
@@ -42,7 +54,7 @@ public class EnemyMeleeStats : MonoBehaviour
 
     private void OnTriggerEnter(Collider other) 
     {
-        if(other.tag == "Weapons")
+        if(other.tag == "Weapons" || other.tag == "SlashProjectile")
         {
             if(weapon.onAttack)
             {

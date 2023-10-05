@@ -18,9 +18,9 @@ MonoBehaviour:
   uiBounds:
     serializedVersion: 2
     x: 2810
-    y: -754
+    y: -755
     width: 2716
-    height: 1521
+    height: 1522
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1598,7 +1598,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Color, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"r":1351.17578125,"g":107.07421112060547,"b":107.07421112060547,"a":1.0}'
+      m_SerializableObject: '{"r":0.0,"g":119.63375091552735,"b":157.5865020751953,"a":1.0}'
     m_Space: 2147483647
   m_Property:
     name: _Color

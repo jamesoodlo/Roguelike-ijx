@@ -4,9 +4,7 @@ using UnityEngine;
 
 public class EnemiesSpawner : MonoBehaviour
 {
-    public EnemyMelee[] enemyMelee;
-
-    public int levelNumber;
+    public StageData stageData;
     public int[] enemiesPattern;
     public int numOfEnemies;
     public Transform[] spawnPoint;
@@ -15,7 +13,7 @@ public class EnemiesSpawner : MonoBehaviour
 
     void Start()
     {
-        numOfEnemies = levelNumber;
+        numOfEnemies = stageData.currentStage;
 
         getSpawnPoint = GetRandomSubsetArray(spawnPoint, numOfEnemies);
 

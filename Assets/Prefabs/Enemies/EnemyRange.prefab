@@ -356,7 +356,7 @@ GameObject:
   - component: {fileID: 1809152141334149633}
   m_Layer: 0
   m_Name: EnemyRange
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -469,8 +469,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyDataStat: {fileID: 11400000, guid: 86ffd35de861b494dac6b8a81d4b5d48, type: 2}
-  healthBar: {fileID: 1809152142397072048}
   currentHealth: 0
+  healthBar: {fileID: 1809152142397072048}
+  Point: {fileID: 7995985405913070072, guid: 6274e8fd8621d3849921c6aac387d3b3, type: 3}
+  Exp: {fileID: 9049475625329366989, guid: 167e400496a562449a991dd11b19e856, type: 3}
 --- !u!1 &1809152141340693228
 GameObject:
   m_ObjectHideFlags: 0
@@ -521,7 +523,7 @@ MonoBehaviour:
   isFiring: 0
   isReloading: 0
   fireRate: 0.55
-  maxAmmo: 16
+  maxAmmo: 8
   ammo: 0
   bulletPrefab: {fileID: 3385380211332264367, guid: e535d2633ed9d78498c670c556d74dd9, type: 3}
 --- !u!1 &1809152141554303662
@@ -1400,7 +1402,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Name
+  m_text: Gunner
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

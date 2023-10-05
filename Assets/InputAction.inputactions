@@ -42,15 +42,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Escape",
-                    "type": "Button",
-                    "id": "b2d2602f-60b0-4204-8ae1-b9a584dd8440",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Block",
                     "type": "Button",
                     "id": "97cf010d-8fab-41f7-81ce-0a4096d15ac5",
@@ -72,6 +63,15 @@
                     "name": "SkillE",
                     "type": "Button",
                     "id": "84bfd263-8540-4d07-a1b6-6929dc881377",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Interaction",
+                    "type": "Button",
+                    "id": "3515957a-833b-42e3-b961-d28ae43207e3",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -169,17 +169,6 @@
                 },
                 {
                     "name": "",
-                    "id": "0d26978a-80c9-4dc9-94a7-c13733298671",
-                    "path": "<Keyboard>/escape",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Escape",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "d139b067-96e3-412c-b64e-16ac8333a22e",
                     "path": "<Mouse>/rightButton",
                     "interactions": "",
@@ -208,6 +197,45 @@
                     "processors": "",
                     "groups": "",
                     "action": "SkillE",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b6d39a23-a6b4-4809-ad20-4507be3115c9",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interaction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "UI",
+            "id": "c12e6ac9-1485-45c9-abf0-724bdad0d45b",
+            "actions": [
+                {
+                    "name": "Escape",
+                    "type": "Button",
+                    "id": "f985bd78-44ea-4614-a4f4-4ed683c99860",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "28ecba88-8662-4584-a60a-e384f807c0c6",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Escape",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

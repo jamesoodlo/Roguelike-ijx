@@ -12,7 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2671ec29932994a4f987cb77c16a1fd7, type: 3}
   m_Name: PlayerBaseStatus
   m_EditorClassIdentifier: 
+  currentPoint: 0
+  Point: 475
+  canLvUp: 1
+  level: 1
+  exp: 0
+  maxExp: 1
   maxHealth: 100
   maxStamina: 5
-  maxBlocked: 30
+  maxShield: 30
   attackDamage: 15
+  speed: 5
+  hasSlasher: 0
+  hasBarrier: 0
+  slasherLv: 1
+  barrierLv: 1

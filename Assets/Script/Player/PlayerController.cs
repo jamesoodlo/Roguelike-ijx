@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
     PlayerStats stats;
     Rigidbody rb;
 
+    public BaseStatus playerDataStat;
+
     [Header("Movement")]
     public float speed;
     public float rotationSpeed = 10f;
@@ -26,17 +28,30 @@ public class PlayerController : MonoBehaviour
     public int currentAttack = 0;
     private float timeSinceAttack;
 
-    [Header("ฺBlock & Parry")]
+    [Header("Block & Parry")]
     public GameObject shieldObj;
     public bool isBlocking;
     public bool isParried;
     private float timeSinceBlock;
 
+    [Header("Skill Slash")]
+    public bool hasSlasher;
+    public SlashSkill slashSkill;
+    public bool onSlash;
+    public bool isSlash;
+    public float slashTime;
+    public float maxSlashTime;
+    public float maxSlashCdTime;
+    public float slashCdTime;
+    public bool canSlash = true;
+
     [Header("Skill Barrier")]
+    public bool hasBarrier;
     public GameObject barrierObj;
     public bool isBarrier;
-    public float barrierTime = 3.0f;
-    public float maxBarrierCdTime = 10.0f;
+    public float barrierTime;
+    public float maxBarrierTime;
+    public float maxBarrierCdTime;
     public float barrierCdTime;
     public bool canBarrier = true;
 
@@ -50,15 +65,25 @@ public class PlayerController : MonoBehaviour
         barrierObj.SetActive(false);
         shieldObj.SetActive(false);
         barrierCdTime = maxBarrierCdTime;
+
+        speed = playerDataStat.speed;
+        slashTime = maxSlashTime;
+        barrierTime = maxBarrierTime;
     }
 
     void Update()
     {    
         timeSinceAttack += Time.deltaTime;
 
+        slashSkill.onSlash = onSlash;
+
+        hasBarrier = playerDataStat.hasBarrier;
+        hasSlasher = playerDataStat.hasSlasher;
+
         Attack();
         Block();
-        barrierSkill(); 
+        SkillQ();
+        SkillE(); 
 
         if(isBlocking || isAttacking)
         {
@@ -157,7 +182,7 @@ public class PlayerController : MonoBehaviour
 
     public void AttackForward()
     {        
-        float forwardSpeed = 3.5f;
+        float forwardSpeed = 15f;
 
         rb.AddForce(transform.forward * forwardSpeed, ForceMode.Impulse);
 
@@ -166,7 +191,7 @@ public class PlayerController : MonoBehaviour
 
     private void Block()
     {
-        if(inputHandle.block && stats.currentBlocked > 0)
+        if(inputHandle.block && stats.currentShield >= 1)
         {
             timeSinceBlock += Time.deltaTime;
             isBlocking = true;
@@ -188,7 +213,7 @@ public class PlayerController : MonoBehaviour
                 shieldObj.SetActive(false);
             }
 
-            if(stats.currentBlocked <= 0)
+            if(stats.currentShield <= 0)
             {
                 timeSinceBlock = 0;
                 isBlocking = false;
@@ -206,37 +231,86 @@ public class PlayerController : MonoBehaviour
     }
 #endregion
     
-    private void barrierSkill()
+#region Skill System
+    private void SkillQ()
     {
-        if(!canBarrier)  barrierCdTime -= Time.deltaTime;
-        if(isBarrier) barrierTime -= Time.deltaTime;
-
-        if(barrierTime <= 0) 
+        if(hasSlasher)
         {
-            barrierTime = 0;
-            barrierObj.SetActive(false);
-            isBarrier = false;
-        }
+            if(!canSlash)  slashCdTime -= Time.deltaTime;
+            if(isSlash) slashTime -= Time.deltaTime;
 
-        if(barrierCdTime <= 0) 
-        {
-            canBarrier = true;
-            barrierCdTime = maxBarrierCdTime;
-        }
-
-        if(canBarrier) barrierTime = 3.0f;
-
-        if(inputHandle.skillE && canBarrier && !isAttacking && barrierCdTime == maxBarrierCdTime)
-        {
-            if(canBarrier)
+            if(slashTime <= 0) 
             {
-                isBarrier = true;
+                slashTime = 0;
+                isSlash = false;
+            }
+
+            if(slashCdTime <= 0) 
+            {
+                canSlash = true;
+                slashCdTime = maxSlashCdTime;
+            }
+
+            if(canSlash) slashTime = maxSlashTime;
+
+            if(inputHandle.skillQ && canSlash && slashCdTime == maxSlashCdTime)
+            {
+                if(canSlash)
+                {
+                    isSlash = true;
+                    
+                    canSlash = false;
+                }
+            }
+            else
+            {
                 
-                barrierObj.SetActive(true);
+            }
+        }
+        else
+        {
 
-                canBarrier = false;
+        }
+    }
 
-                animHandle.BarrierAnimation();
+    private void SkillE()
+    {
+        if(hasBarrier)
+        {
+            if(!canBarrier)  barrierCdTime -= Time.deltaTime;
+            if(isBarrier) barrierTime -= Time.deltaTime;
+
+            if(barrierTime <= 0) 
+            {
+                barrierTime = 0;
+                barrierObj.SetActive(false);
+                isBarrier = false;
+            }
+
+            if(barrierCdTime <= 0) 
+            {
+                canBarrier = true;
+                barrierCdTime = maxBarrierCdTime;
+            }
+
+            if(canBarrier) barrierTime = maxBarrierTime;
+
+            if(inputHandle.skillE && canBarrier && !isAttacking && barrierCdTime == maxBarrierCdTime)
+            {
+                if(canBarrier)
+                {
+                    isBarrier = true;
+                    
+                    barrierObj.SetActive(true);
+
+                    canBarrier = false;
+
+                    animHandle.BarrierAnimation();
+                }
+            }
+            else
+            {
+                
             }
         }
         else
@@ -244,6 +318,7 @@ public class PlayerController : MonoBehaviour
             
         }
     }  
+#endregion
 
     private IEnumerator rollingTimer()
     {
