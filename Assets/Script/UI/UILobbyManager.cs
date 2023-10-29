@@ -8,27 +8,40 @@ using UnityEngine.SceneManagement;
 public class UILobbyManager : MonoBehaviour
 {
     [Header("Data")]
+    public SaveManager saveData;
     public BaseStatus playerDataStat;
     public UpgradeData upgradeData;
     public StageData stageData;
+    public SettingData settingData;
 
     [Header("Panel")]
     public GameObject yNnPanel;
     public GameObject settingPanel;
+    public GameObject settingPanelBG;
+    public GameObject upgradePanelBG;
 
-    [Header("Point")]
-    public TextMeshProUGUI point;
+    [Header("Eggs")]
+    public TextMeshProUGUI Eggs;
 
     [Header("Stage")]
     public TextMeshProUGUI stageText;
+    public TextMeshProUGUI highestStageText;
 
     [Header("Health")]
     public Slider healthBar;
     public TextMeshProUGUI HPCostText;
 
-    [Header("Shield")]
-    public Slider shieldBar;
-    public TextMeshProUGUI SHDCostText;
+    [Header("Stamina")]
+    public Slider staminaBar;
+    public TextMeshProUGUI STMCostText;
+
+    [Header("Stamina Regen")]
+    public Slider staminaRegenBar;
+    public TextMeshProUGUI STMReCostText;
+
+    [Header("Guard")]
+    public Slider guardBar;
+    public TextMeshProUGUI GDCostText;
 
     [Header("Damage")]
     public Slider damageBar;
@@ -38,19 +51,48 @@ public class UILobbyManager : MonoBehaviour
     public Slider speedBar;
     public TextMeshProUGUI SPDCostText;
 
+    [Header("Pocket Items")]
+    public TextMeshProUGUI Pocket1Text;
+    public TextMeshProUGUI Pocket2Text;
+    public TextMeshProUGUI Pocket1CostText;
+    public TextMeshProUGUI Pocket2CostText;
+
     [Header("Skill")]
-    public TextMeshProUGUI BarrierCostText;
+    public TextMeshProUGUI SuperDuckCostText;
     public TextMeshProUGUI SlasherCostText;
 
+    [Header("Sound Slider")]
+    public Slider musicSlider;
+    public Slider effectSlider;
+    public Slider ambientSlider;
+    public Slider uiSlider;
+
+    [Header("Audio Source")]
+    public AudioSource musicSound;
+    public AudioSource ambientSound;
+    public AudioSource effectSound;
+    public AudioSource uiSound;
+
+    [Header("FullScreen Toggle")]
+    public Toggle fullScreenValue;
+
+    [Header("Quality Dropdown")]
+    public TMP_Dropdown qualityValue;
 
     void Start()
     {
         settingPanel.SetActive(false);
+        settingPanelBG.SetActive(false);
+        upgradePanelBG.SetActive(false);
         yNnPanel.SetActive(false);
 
-        if(playerDataStat.Point != 0 || playerDataStat.currentPoint != 0) 
-            playerDataStat.Point += playerDataStat.currentPoint;
-            playerDataStat.currentPoint = 0;
+        Time.timeScale = 1;
+
+        SetAllSetting();
+
+        if(playerDataStat.Eggs != 0 || playerDataStat.currentEggs != 0) 
+            playerDataStat.Eggs += playerDataStat.currentEggs;
+            playerDataStat.currentEggs = 0;
     }
 
     void Update()
@@ -63,7 +105,9 @@ public class UILobbyManager : MonoBehaviour
     public void SetStatBar()
     {
         healthBar.value = playerDataStat.maxHealth;
-        shieldBar.value = playerDataStat.maxShield;
+        staminaBar.value = playerDataStat.maxStamina;
+        staminaRegenBar.value = playerDataStat.maxStaminaRegen;
+        guardBar.value = playerDataStat.maxGuard;
         damageBar.value = playerDataStat.attackDamage;
         speedBar.value = playerDataStat.speed;
     }
@@ -71,9 +115,16 @@ public class UILobbyManager : MonoBehaviour
     private void SetUpgradeCost()
     {
         UpdateUpgradeCostText(HPCostText, healthBar.value, healthBar.maxValue, upgradeData.upgradeHPCost);
-        UpdateUpgradeCostText(SHDCostText, shieldBar.value, shieldBar.maxValue, upgradeData.upgradeSHDCost);
+        UpdateUpgradeCostText(STMCostText, staminaBar.value, staminaBar.maxValue, upgradeData.upgradeSTMCost);
+        UpdateUpgradeCostText(STMReCostText, staminaRegenBar.value, staminaRegenBar.maxValue, upgradeData.upgradeSTMReCost);
+        UpdateUpgradeCostText(GDCostText, guardBar.value, guardBar.maxValue, upgradeData.upgradeGDCost);
         UpdateUpgradeCostText(DMGCostText, damageBar.value, damageBar.maxValue, upgradeData.upgradeDMGCost);
         UpdateUpgradeCostText(SPDCostText, speedBar.value, speedBar.maxValue, upgradeData.upgradeSPDCost);
+        
+        Pocket1Text.text = playerDataStat.item1Pocket.ToString();
+        Pocket2Text.text = playerDataStat.item2Pocket.ToString();
+        Pocket1CostText.text = upgradeData.upgradePocket1Cost.ToString();
+        Pocket2CostText.text = upgradeData.upgradePocket2Cost.ToString();
     }
 
     private void UpdateUpgradeCostText(TMPro.TextMeshProUGUI costText, float value, float maxValue, int upgradeCost)
@@ -84,17 +135,18 @@ public class UILobbyManager : MonoBehaviour
     public void SetDataToText()
     {
 
-        point.text = playerDataStat.Point.ToString();
+        Eggs.text = playerDataStat.Eggs.ToString();
         stageText.text = stageData.currentStage.ToString();
+        highestStageText.text = stageData.HighestStage.ToString();
         
         //Skill Unlock
-        if(!playerDataStat.hasBarrier) 
+        if(!playerDataStat.hasSuperDuck) 
         {
-            BarrierCostText.text = upgradeData.upgradeBarrierCost.ToString();
+            SuperDuckCostText.text = upgradeData.upgradeSuperDuckCost.ToString();
         }
         else
         {
-            BarrierCostText.text = "haveSkill";
+            SuperDuckCostText.text = " ";
         }
 
         if(!playerDataStat.hasSlasher) 
@@ -103,7 +155,7 @@ public class UILobbyManager : MonoBehaviour
         }
         else
         {
-            SlasherCostText.text = "haveSkill";
+            SlasherCostText.text = " ";
         }
     }
 
@@ -115,6 +167,7 @@ public class UILobbyManager : MonoBehaviour
         }
         else
         {
+            Time.timeScale = 1;
             SceneManager.LoadScene("Stage");
         }
     }
@@ -133,7 +186,9 @@ public class UILobbyManager : MonoBehaviour
 
     public void Setting()
     {
-       if(!yNnPanel.activeSelf) settingPanel.SetActive(true);
+       if(!yNnPanel.activeSelf) 
+            settingPanel.SetActive(true);
+            settingPanelBG.SetActive(true);
     }
 
 #region Upgrade Functions
@@ -146,11 +201,12 @@ public class UILobbyManager : MonoBehaviour
         }
         else
         {
-            if(playerDataStat.Point >= upgradeData.upgradeHPCost && healthBar.value < healthBar.maxValue)
+            if(playerDataStat.Eggs >= upgradeData.upgradeHPCost && healthBar.value < healthBar.maxValue)
             {
-                playerDataStat.Point -= upgradeData.upgradeHPCost;
+                playerDataStat.Eggs -= upgradeData.upgradeHPCost;
                 playerDataStat.maxHealth += 25;
                 upgradeData.upgradeHPCost += 25;
+                saveData.SaveGame();
             }
             else
             {
@@ -159,7 +215,7 @@ public class UILobbyManager : MonoBehaviour
         }
     }
 
-    public void ShieldUpgrade()
+    public void StaminaUpgrade()
     {
         if(yNnPanel.activeSelf || settingPanel.activeSelf)
         {
@@ -167,11 +223,56 @@ public class UILobbyManager : MonoBehaviour
         }
         else
         {
-            if(playerDataStat.Point >= upgradeData.upgradeSHDCost && shieldBar.value < shieldBar.maxValue)
+            if(playerDataStat.Eggs >= upgradeData.upgradeSTMCost && staminaBar.value < staminaBar.maxValue)
             {
-                playerDataStat.Point -= upgradeData.upgradeSHDCost;
-                playerDataStat.maxShield += 30;
-                upgradeData.upgradeSHDCost += 20;
+                playerDataStat.Eggs -= upgradeData.upgradeSTMCost;
+                playerDataStat.maxStamina += 20;
+                upgradeData.upgradeSTMCost += 25;
+                saveData.SaveGame();
+            }
+            else
+            {
+
+            }
+        }
+    }
+
+    public void StaminaRegenUpgrade()
+    {
+        if(yNnPanel.activeSelf || settingPanel.activeSelf)
+        {
+            
+        }
+        else
+        {
+            if(playerDataStat.Eggs >= upgradeData.upgradeSTMReCost && staminaRegenBar.value < staminaRegenBar.maxValue)
+            {
+                playerDataStat.Eggs -= upgradeData.upgradeSTMReCost;
+                playerDataStat.maxStaminaRegen += 5;
+                upgradeData.upgradeSTMReCost += 30;
+                saveData.SaveGame();
+            }
+            else
+            {
+
+            }
+        }
+    }
+
+    public void GuardUpgrade()
+    {
+        if(yNnPanel.activeSelf || settingPanel.activeSelf)
+        {
+            
+        }
+        else
+        {
+            if(playerDataStat.Eggs >= upgradeData.upgradeGDCost && guardBar.value < guardBar.maxValue)
+            {
+                playerDataStat.Eggs -= upgradeData.upgradeGDCost;
+                playerDataStat.maxGuard += 15;
+                upgradeData.upgradeGDCost += 20;
+                saveData.SaveGame();
             }
             else
             {
@@ -188,11 +289,12 @@ public class UILobbyManager : MonoBehaviour
         }
         else
         {
-            if(playerDataStat.Point >= upgradeData.upgradeDMGCost && damageBar.value < damageBar.maxValue)
+            if(playerDataStat.Eggs >= upgradeData.upgradeDMGCost && damageBar.value < damageBar.maxValue)
             {
-                playerDataStat.Point -= upgradeData.upgradeDMGCost;
+                playerDataStat.Eggs -= upgradeData.upgradeDMGCost;
                 playerDataStat.attackDamage += 5;
                 upgradeData.upgradeDMGCost += 30;
+                saveData.SaveGame();
             }
             else
             {
@@ -209,11 +311,12 @@ public class UILobbyManager : MonoBehaviour
         }
         else
         {
-            if(playerDataStat.Point >= upgradeData.upgradeSPDCost && speedBar.value < speedBar.maxValue)
+            if(playerDataStat.Eggs >= upgradeData.upgradeSPDCost && speedBar.value < speedBar.maxValue)
             {
-                playerDataStat.Point -= upgradeData.upgradeSPDCost;
+                playerDataStat.Eggs -= upgradeData.upgradeSPDCost;
                 playerDataStat.speed += 1;
                 upgradeData.upgradeSPDCost += 35;
+                saveData.SaveGame();
             }
             else
             {
@@ -230,10 +333,11 @@ public class UILobbyManager : MonoBehaviour
         }
         else
         {
-            if(playerDataStat.Point >= upgradeData.upgradeSlasherCost && !playerDataStat.hasSlasher)
+            if(playerDataStat.Eggs >= upgradeData.upgradeSlasherCost && !playerDataStat.hasSlasher)
             {
-                playerDataStat.Point -= upgradeData.upgradeSlasherCost;
+                playerDataStat.Eggs -= upgradeData.upgradeSlasherCost;
                 playerDataStat.hasSlasher = true;
+                saveData.SaveGame();
             }
             else
             {
@@ -250,10 +354,11 @@ public class UILobbyManager : MonoBehaviour
         }
         else
         {
-            if(playerDataStat.Point >= upgradeData.upgradeBarrierCost && !playerDataStat.hasBarrier)
+            if(playerDataStat.Eggs >= upgradeData.upgradeSuperDuckCost && !playerDataStat.hasSuperDuck)
             {
-                playerDataStat.Point -= upgradeData.upgradeBarrierCost;
-                playerDataStat.hasBarrier = true;
+                playerDataStat.Eggs -= upgradeData.upgradeSuperDuckCost;
+                playerDataStat.hasSuperDuck = true;
+                saveData.SaveGame();
             }
             else
             {
@@ -261,11 +366,81 @@ public class UILobbyManager : MonoBehaviour
             }
         }
     }
+
+    public void Pocket1Upgrade()
+    {
+        if(yNnPanel.activeSelf || settingPanel.activeSelf)
+        {
+            
+        }
+        else
+        {
+            if(playerDataStat.Eggs >= upgradeData.upgradePocket1Cost && playerDataStat.item1Pocket < 10)
+            {
+                playerDataStat.Eggs -= upgradeData.upgradePocket1Cost;
+                playerDataStat.item1Pocket += 1;
+                upgradeData.upgradePocket1Cost += 40;
+                saveData.SaveGame();
+            }
+            else
+            {
+                
+            }
+        }
+    }
+
+    public void Pocket2Upgrade()
+    {
+        if(yNnPanel.activeSelf || settingPanel.activeSelf)
+        {
+            
+        }
+        else
+        {
+            if(playerDataStat.Eggs >= upgradeData.upgradePocket2Cost && playerDataStat.item2Pocket < 10)
+            {
+                playerDataStat.Eggs -= upgradeData.upgradePocket2Cost;
+                playerDataStat.item2Pocket += 1;
+                upgradeData.upgradePocket2Cost += 40;
+                saveData.SaveGame();
+            }
+            else
+            {
+                
+            }
+        }
+    }
+
+    public void nextPanelUpgrade()
+    {
+        if(yNnPanel.activeSelf || settingPanel.activeSelf)
+        {
+            
+        }
+        else
+        {
+            upgradePanelBG.SetActive(true);
+        }
+        
+    }
+
+    public void backPanelUpgrade()
+    {
+        if(yNnPanel.activeSelf || settingPanel.activeSelf)
+        {
+            
+        }
+        else
+        {
+            upgradePanelBG.SetActive(false);
+        }
+    }
 #endregion
 
 #region Quit Functions
     public void Quit()
     {
+        saveData.SaveGame();
         Application.Quit();
     }
 
@@ -285,36 +460,70 @@ public class UILobbyManager : MonoBehaviour
     public void FinishSetting()
     {
         //Save Setting Value
+        saveData.SaveGame();
         settingPanel.SetActive(false);
+        settingPanelBG.SetActive(false);
+    }
+
+    public void SetAllSetting()
+    {
+        //Sound
+        uiSound.volume = settingData.uiSound;
+        uiSlider.value = uiSound.volume;   
+
+        effectSound.volume = settingData.effectSound;
+        effectSlider.value = effectSound.volume; 
+
+        musicSound.volume = settingData.musicSound;
+        musicSlider.value = musicSound.volume; 
+
+        ambientSound.volume = settingData.ambientSound;
+        ambientSlider.value = ambientSound.volume; 
+
+        //Display
+        fullScreenValue.isOn = settingData.isFullScreen;
+
+        //Quality
+        qualityValue.value = settingData.qualityIndex;
     }
 
     public void MusicSetting()
     {
-        //Set Music Sound
+        settingData.musicSound = musicSlider.value;
+        musicSound.volume = settingData.musicSound;
     }
 
     public void AmbientSetting()
     {
-        //Set Ambient Sound
+        settingData.ambientSound = ambientSlider.value;
+        ambientSound.volume = settingData.ambientSound;
     }
 
     public void EffectSetting()
     {
-        //Set Effect Sound
+        settingData.effectSound = effectSlider.value;
+        effectSound.volume = settingData.effectSound;
     }
 
-    public void QualitySettings(int qualityIndex)
+    public void UISetting()
     {
-        //qualityIndex = graphicValue.value;
-        //settingData.qualityIndex = graphicValue.value;
-        //QualitySettings.SetQualityLevel(qualityIndex);  
+        settingData.uiSound = uiSlider.value;
+        uiSound.volume = settingData.uiSound;
+        
+    }
+
+    public void QualitySetting(int qualityIndex)
+    {
+        qualityIndex = qualityValue.value;
+        settingData.qualityIndex = qualityValue.value;
+        QualitySettings.SetQualityLevel(qualityIndex, false);  
     }
 
     public void FullScreenSetting(bool isFullScreen)
     {
-        //isFullScreen = fullScreenValue.isOn;
-        //settingData.isFullScreen = fullScreenValue.isOn;
-        //Screen.fullScreen = isFullScreen;   
+        isFullScreen = fullScreenValue.isOn;
+        settingData.isFullScreen = fullScreenValue.isOn;
+        Screen.fullScreen = isFullScreen;   
     }
 #endregion
 

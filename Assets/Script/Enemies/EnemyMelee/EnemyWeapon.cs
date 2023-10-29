@@ -10,6 +10,7 @@ public class EnemyWeapon : MonoBehaviour
 
     public EnemyBaseStatus enemyDataStat;
     public bool onAttack = false;
+    public bool isParried = false;
     public float damage;
 
     void Start()
@@ -23,13 +24,15 @@ public class EnemyWeapon : MonoBehaviour
     void Update()
     {
         playerController = FindObjectOfType<PlayerController>();
+
+        isParried = enemyMelee.isParried;
     }
 
     private void OnTriggerEnter(Collider other) 
     {
         if(other.gameObject.tag == "Shield")
         {
-            if(playerController.isParried)
+            if(playerController.isParried && onAttack)
             {
                 anim.SetTrigger("Parried");
                 enemyMelee.Knockback();

@@ -9,6 +9,7 @@ public class AnimationHandle : MonoBehaviour
     PlayerController playerControll;
     PlayerStats stats;
     Rigidbody rb;
+    SoundFx soundFx;
 
     public Collider playerCollider;
     public GameObject[] slashObj;
@@ -17,6 +18,7 @@ public class AnimationHandle : MonoBehaviour
     {
         playerControll = GetComponent<PlayerController>();
         inputHandle = GetComponent<InputHandle>();
+        soundFx = GetComponent<SoundFx>();
         stats = GetComponent<PlayerStats>();
         anim = GetComponent<Animator>(); 
         rb = GetComponent<Rigidbody>();
@@ -29,7 +31,15 @@ public class AnimationHandle : MonoBehaviour
     private void Update() 
     {
         moveAnimation();
-        anim.SetBool("Block", playerControll.isBlocking);
+        
+        if(stats.currentGuard <= 0)
+        {
+            anim.SetBool("Block", false);
+        }
+        else
+        {
+            anim.SetBool("Block", playerControll.isGuard);
+        }
     }
 
     public void moveAnimation()
@@ -40,7 +50,7 @@ public class AnimationHandle : MonoBehaviour
         }
         else
         {
-            anim.SetFloat("Horizontal", 0, 0.1f, Time.deltaTime);
+            anim.SetFloat("Horizontal", 0);
         }
     }
 
@@ -54,7 +64,7 @@ public class AnimationHandle : MonoBehaviour
         anim.SetTrigger("isRolling");
     }
 
-    public void BarrierAnimation()
+    public void SuperDuckAnimation()
     {
         anim.SetTrigger("Skill2");
     }
@@ -79,13 +89,44 @@ public class AnimationHandle : MonoBehaviour
         playerControll.isAttacking = false;
     } 
 
+    public void startHurt()
+    {
+        stats.isHurt = true;
+    }
+
+    public void endHurt()
+    {
+        stats.isHurt = false;
+    }
+
     public void DrainStamina()
     {
-        stats.currentStamina -= 1;
+        if(!playerControll.isSuperDuck) stats.currentStamina -= 15;
+    }
+
+    public void FootStepSfx()
+    {
+        soundFx.footStepSfx.Play();
+    }
+
+    public void SlashSfx()
+    {
+        soundFx.slashSfx.Play();
+    }
+
+    public void RollSfx()
+    {
+        soundFx.rollingSfx.Play();
+    }
+
+    public void BuffSfx()
+    {
+        soundFx.buffSfx.Play();
     }
 
     public void EnebledSlashFx()
     {
+
         slashObj[0].SetActive(true);
     }
 

@@ -7,4 +7,5 @@ public class StageData : ScriptableObject
 {
     public int currentStage;
     public int maxStage;
+    public int HighestStage;
 }

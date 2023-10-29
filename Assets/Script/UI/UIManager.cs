@@ -8,13 +8,21 @@ using UnityEngine.SceneManagement;
 public class UIManager : MonoBehaviour
 {
     UIInput uiInput;
+    private PlayerController playerControll;
+    private PlayerStats stats;
+    private Inventory inven;
     private bool SkillUpPhase = false;
     
     [Header("Data")]
+    public SaveManager saveData;
     public StageData stageData;
     public BaseStatus playerDataStat;
+    public SettingData settingData;
 
     [Header("Panel")]
+    public GameObject skillECdPanel;
+    public GameObject skillQCdPanel;
+    public GameObject BGPanel;
     public GameObject pausedPanel;
     public GameObject nextStagePanel;
     public GameObject upgradePanel;
@@ -22,43 +30,88 @@ public class UIManager : MonoBehaviour
     public GameObject yNnQuitPanel;
     public GameObject yNnLobbyPanel;
     public GameObject yNnNextStagePanel;
+    public GameObject gameOverPanel;
 
-    [Header("Button")]
+    [Header("Skill")]
+    public GameObject SlasherImg;
+    public GameObject SuperDuckImg;
     public GameObject SlasherLvUpBtn;
-    public GameObject BarrierLvUpBtn;
+    public GameObject SuperDuckLvUpBtn;
 
     [Header("Text")]
+    public GameObject gameOverText;
+    public GameObject lastStageText;
     public TextMeshProUGUI stageText;
-    public TextMeshProUGUI pointText;
+    public TextMeshProUGUI HighestStageText;
+    public TextMeshProUGUI EggsText;
+    public TextMeshProUGUI EggsGameOverText;
+    public TextMeshProUGUI item1Num;
+    public TextMeshProUGUI item2Num;
+    public TextMeshProUGUI item2Time;
+    public TextMeshProUGUI item1Pocket;
+    public TextMeshProUGUI item2Pocket;
     public TextMeshProUGUI levelText;
     public TextMeshProUGUI slasherLvText;
-    public TextMeshProUGUI barrierLvText;
+    public TextMeshProUGUI superDuckLvText;
+    public TextMeshProUGUI slasherTimeText;
+    public TextMeshProUGUI superDuckTimeText;
+    public TextMeshProUGUI slasherCdTimeText;
+    public TextMeshProUGUI superDuckCdTimeText;
 
     [Header("Slider")]
     public Slider healthBar;
-    public Slider shieldBar;
+    public Slider guardBar;
+    public Slider staminaBar;
     public Slider ExpBar;
-    public Slider[] cdBar;
+
+    [Header("Sound Slider")]
+    public Slider musicSlider;
+    public Slider effectSlider;
+    public Slider ambientSlider;
+    public Slider uiSlider;
+
+    [Header("Audio Source")]
+    public AudioSource musicSound;
+    public AudioSource ambientSound;
+    public AudioSource effectSound;
+    public AudioSource uiSound;
+
+    [Header("FullScreen Toggle")]
+    public Toggle fullScreenValue;
+
+    [Header("Quality Dropdown")]
+    public TMP_Dropdown qualityValue;
 
     void Start()
     {
         uiInput = GetComponent<UIInput>();
+        playerControll = FindObjectOfType<PlayerController>();
+        stats = FindObjectOfType<PlayerStats>();
+        inven = FindObjectOfType<Inventory>();
 
         yNnQuitPanel.SetActive(false);
         yNnLobbyPanel.SetActive(false);
         yNnNextStagePanel.SetActive(false);
         pausedPanel.SetActive(false);
         settingPanel.SetActive(false);
+        gameOverPanel.SetActive(false);
+        BGPanel.SetActive(false);
 
-        healthBar.maxValue = playerDataStat.maxHealth;
-        shieldBar.maxValue = playerDataStat.maxShield;
+        SetAllSetting();
     }
 
     void Update()
     {
+        healthBar.maxValue = playerDataStat.maxHealth;
+        guardBar.maxValue = playerDataStat.maxGuard;
+        staminaBar.maxValue = playerDataStat.maxStamina;
+
         upgradePanel.SetActive(SkillUpPhase);
         SlasherLvUpBtn.SetActive(playerDataStat.hasSlasher);
-        BarrierLvUpBtn.SetActive(playerDataStat.hasBarrier);
+        SuperDuckLvUpBtn.SetActive(playerDataStat.hasSuperDuck);
+        SlasherImg.SetActive(playerDataStat.hasSlasher);
+        SuperDuckImg.SetActive(playerDataStat.hasSuperDuck);
+        
         SetDataToText();
         SetStatusBar();
         SetSkill();
@@ -68,30 +121,48 @@ public class UIManager : MonoBehaviour
         {
             Time.timeScale = 0;
             pausedPanel.SetActive(true);
+            BGPanel.SetActive(true);
         }
     }
 
     public void SetDataToText()
     {
         stageText.text = stageData.currentStage.ToString();
-        pointText.text = playerDataStat.currentPoint.ToString();
+        HighestStageText.text = stageData.HighestStage.ToString();
+        EggsText.text = playerDataStat.currentEggs.ToString();
+        item1Num.text = playerDataStat.item1Num.ToString();
+        item2Num.text = playerDataStat.item2Num.ToString();
+        item1Pocket.text = playerDataStat.item1Pocket.ToString();
+        item2Pocket.text = playerDataStat.item2Pocket.ToString();
+        EggsGameOverText.text = playerDataStat.currentEggs.ToString(); 
         levelText.text = playerDataStat.level.ToString();
         slasherLvText.text = playerDataStat.slasherLv.ToString();
-        barrierLvText.text = playerDataStat.barrierLv.ToString();
+        superDuckLvText.text = playerDataStat.superDuckLv.ToString();
+
+        
+
+        if(inven.isBarrier)
+        {
+            item2Time.text = inven.barrierTime.ToString("F1");
+        } 
+        else
+        {
+            item2Time.text = " ";
+        }
     }
 
     public void LvUp()
     {
         bool isLvUP = false;
 
-        if(playerDataStat.level  % 5 == 0 && playerDataStat.canLvUp)
+        if(playerDataStat.level % 5 == 0 && playerDataStat.canLvUp && playerDataStat.slasherLv < 10 && playerDataStat.superDuckLv < 10)
         {
             isLvUP = true;
         }
 
         if(isLvUP)
         {
-            if(playerDataStat.hasBarrier || playerDataStat.hasSlasher) SkillUpPhase = true;
+            if(playerDataStat.hasSuperDuck || playerDataStat.hasSlasher) SkillUpPhase = true;
             isLvUP = false;
         }
 
@@ -107,9 +178,10 @@ public class UIManager : MonoBehaviour
 
     public void SetStatusBar()
     {
-        PlayerStats stats = FindObjectOfType<PlayerStats>();
         healthBar.value = stats.currentHealth;
-        shieldBar.value = stats.currentShield;
+        guardBar.value = stats.currentGuard;
+        staminaBar.value = stats.currentStamina;
+
         
         ExpBar.value = playerDataStat.exp;
         ExpBar.maxValue = playerDataStat.maxExp;
@@ -117,19 +189,54 @@ public class UIManager : MonoBehaviour
 
     public void SetSkill()
     {
-        PlayerController playerControll = FindObjectOfType<PlayerController>();
+        if(playerControll.isSlash)
+        {
+            slasherTimeText.text = playerControll.slashTime.ToString("F1");
+        } 
+        else
+        {
+            slasherTimeText.text = " ";
+        }
 
-        cdBar[0].maxValue = playerControll.maxSlashCdTime;
-        cdBar[0].value = playerControll.slashCdTime;
+        if(playerControll.isSuperDuck) 
+        {
+            superDuckTimeText.text = playerControll.superDuckTime.ToString("F1");
+            
+        }
+        else
+        {
+            superDuckTimeText.text = " ";
+        }
 
-        cdBar[1].maxValue = playerControll.maxBarrierCdTime;
-        cdBar[1].value = playerControll.barrierCdTime;
+        if(playerControll.canSlash)
+        {
+            slasherCdTimeText.text = " ";
+            skillQCdPanel.SetActive(false);
+        }
+        else
+        {
+            slasherCdTimeText.text = playerControll.slashCdTime.ToString("F1");
+            skillQCdPanel.SetActive(true);
+        }
+
+        if(playerControll.canSuperDuck)
+        {
+            superDuckCdTimeText.text = " ";
+            skillECdPanel.SetActive(false);
+        }
+        else
+        {
+            superDuckCdTimeText.text = playerControll.superDuckCdTime.ToString("F1");
+            skillECdPanel.SetActive(true);
+        }
+        
     }
 
     public void Resume()
     {
         Time.timeScale = 1;
         pausedPanel.SetActive(false);
+        BGPanel.SetActive(false);
     }
 
     public void Setting()
@@ -158,12 +265,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void BarrierLvUp()
+    public void superDuckLvUp()
     {
-        if(playerDataStat.hasBarrier)
+        if(playerDataStat.hasSuperDuck)
         {
-            if(playerDataStat.barrierLv > 10) playerDataStat.barrierLv = 10;
-            playerDataStat.barrierLv += 1;
+            if(playerDataStat.superDuckLv > 10) playerDataStat.superDuckLv = 10;
+            playerDataStat.superDuckLv += 1;
             playerDataStat.canLvUp = false;
             SkillUpPhase = false;
             Time.timeScale = 1;
@@ -186,10 +293,17 @@ public class UIManager : MonoBehaviour
         playerDataStat.exp = 0;
         playerDataStat.maxExp = 1;
         stageData.currentStage = 1;
-        playerDataStat.currentPoint = 0;
+        playerDataStat.currentEggs = 0;
         playerDataStat.slasherLv = 1;
-        playerDataStat.barrierLv = 1;
+        playerDataStat.superDuckLv = 1;
+        playerDataStat.item1Num = 0;
+        playerDataStat.item2Num = 0;
         Time.timeScale = 1;
+        playerControll.isSlash = false;
+        playerDataStat.maxHealth = playerDataStat.currentMaxHealth;
+        playerDataStat.attackDamage = playerDataStat.currentAttackDamage;
+        playerDataStat.speed = playerDataStat.currentSpeed;
+        saveData.SaveGame();
         SceneManager.LoadScene("Lobby");
     }
 
@@ -199,6 +313,14 @@ public class UIManager : MonoBehaviour
         pausedPanel.SetActive(true);
     }
 
+    public void LobbyGameOVer()
+    {
+        playerDataStat.Eggs += playerDataStat.currentEggs;
+        Time.timeScale = 1;
+        saveData.SaveGame();
+        Lobby();
+    }
+
 #endregion
 
 #region Quit Functions
@@ -206,6 +328,7 @@ public class UIManager : MonoBehaviour
     public void YesNNoQuit()
     {
         yNnQuitPanel.SetActive(true);
+        pausedPanel.SetActive(false);
     }
 
     public void Quit()
@@ -214,10 +337,17 @@ public class UIManager : MonoBehaviour
         playerDataStat.exp = 0;
         playerDataStat.maxExp = 1;
         stageData.currentStage = 1;
-        playerDataStat.currentPoint = 0;
+        playerDataStat.currentEggs = 0;
         playerDataStat.slasherLv = 1;
-        playerDataStat.barrierLv = 1;
+        playerDataStat.superDuckLv = 1;
+        playerDataStat.item1Num = 0;
+        playerDataStat.item2Num = 0;
+        playerControll.isSlash = false;
+        playerDataStat.maxHealth = playerDataStat.currentMaxHealth;
+        playerDataStat.attackDamage = playerDataStat.currentAttackDamage;
+        playerDataStat.speed = playerDataStat.currentSpeed;
         Time.timeScale = 1;
+        saveData.SaveGame();
         Application.Quit();
     }
 
@@ -238,11 +368,17 @@ public class UIManager : MonoBehaviour
 
     public void YesGoUpgrade()
     {
-        playerDataStat.Point += playerDataStat.currentPoint;
-        playerDataStat.Point -= playerDataStat.Point * 45 / 100;
-        SceneManager.LoadScene("Lobby");
-        playerDataStat.currentPoint = 0;
+        playerDataStat.Eggs += playerDataStat.currentEggs;
+        playerDataStat.Eggs -= playerDataStat.Eggs * 45 / 100;
+        playerControll.isSlash = false;
+        playerDataStat.maxHealth = playerDataStat.currentMaxHealth;
+        playerDataStat.attackDamage = playerDataStat.currentAttackDamage;
+        playerDataStat.speed = playerDataStat.currentSpeed;
+        playerDataStat.currentEggs = 0;
+        stageData.currentStage += 1;
         Time.timeScale = 1;
+        saveData.SaveGame();
+        SceneManager.LoadScene("Lobby");
     }
 
     public void NoGoBack()
@@ -255,82 +391,24 @@ public class UIManager : MonoBehaviour
     {
         Time.timeScale = 1;
 
-        if(stageData.currentStage == 1 && stageData.currentStage < 2)
+        if(stageData.currentStage < stageData.maxStage)
         {
-            stageData.currentStage = 2;
-            SceneManager.LoadScene("Stage");
+            bool nextStage = true;
+
+            if(nextStage)
+                nextStage = false;
+                playerControll.isSlash = false;
+                playerDataStat.maxHealth = playerDataStat.currentMaxHealth;
+                playerDataStat.attackDamage = playerDataStat.currentAttackDamage;
+                playerDataStat.speed = playerDataStat.currentSpeed;
+                stageData.currentStage++;
+                SceneManager.LoadScene("Stage");
         }
-        else if(stageData.currentStage == 2 && stageData.currentStage < 3)
+        else if(stageData.currentStage >= stageData.maxStage)
         {
-            stageData.currentStage = 3;
-            SceneManager.LoadScene("Stage");
+
         }
-        else if(stageData.currentStage == 3 && stageData.currentStage < 4)
-        {
-            stageData.currentStage = 4;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 4 && stageData.currentStage < 5)
-        {
-            stageData.currentStage = 5;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 5 && stageData.currentStage < 6)
-        {
-            stageData.currentStage = 6;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 6 && stageData.currentStage < 7)
-        {
-            stageData.currentStage = 7;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 7 && stageData.currentStage < 8)
-        {
-            stageData.currentStage = 8;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 8 && stageData.currentStage < 9)
-        {
-            stageData.currentStage = 9;
-            SceneManager.LoadScene("Stage");
-        } 
-        else if(stageData.currentStage == 9 && stageData.currentStage < 10)
-        {
-            stageData.currentStage = 10;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 10 && stageData.currentStage < 11)
-        {
-            stageData.currentStage = 11;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 11 && stageData.currentStage < 12)
-        {
-            stageData.currentStage = 12;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 12 && stageData.currentStage < 13)
-        {
-            stageData.currentStage = 13;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 13 && stageData.currentStage < 14)
-        {
-            stageData.currentStage = 14;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage == 14 && stageData.currentStage < 15)
-        {
-            stageData.currentStage = 15;
-            SceneManager.LoadScene("Stage");
-        }
-        else if(stageData.currentStage > 15)
-        {
-            stageData.currentStage = 1;
-            Time.timeScale = 0;
-            SceneManager.LoadScene("Lobby");
-        }
+        
     }
 #endregion 
 
@@ -339,37 +417,70 @@ public class UIManager : MonoBehaviour
     public void FinishSetting()
     {
         //Save Setting Value
+        saveData.SaveGame();
         settingPanel.SetActive(false);
         pausedPanel.SetActive(true);
     }
 
+    public void SetAllSetting()
+    {
+        //Sound
+        uiSound.volume = settingData.uiSound;
+        uiSlider.value = uiSound.volume;   
+
+        effectSound.volume = settingData.effectSound;
+        effectSlider.value = effectSound.volume; 
+
+        musicSound.volume = settingData.musicSound;
+        musicSlider.value = musicSound.volume; 
+
+        ambientSound.volume = settingData.ambientSound;
+        ambientSlider.value = ambientSound.volume; 
+
+        //Display
+        fullScreenValue.isOn = settingData.isFullScreen;
+
+        //Quality
+        qualityValue.value = settingData.qualityIndex;
+    }
+
     public void MusicSetting()
     {
-        //Set Music Sound
+        settingData.musicSound = musicSlider.value;
+        musicSound.volume = settingData.musicSound;
     }
 
     public void AmbientSetting()
     {
-        //Set Ambient Sound
+        settingData.ambientSound = ambientSlider.value;
+        ambientSound.volume = settingData.ambientSound;
     }
 
     public void EffectSetting()
     {
-        //Set Effect Sound
+        settingData.effectSound = effectSlider.value;
+        effectSound.volume = settingData.effectSound;
     }
 
-    public void QualitySettings(int qualityIndex)
+    public void UISetting()
     {
-        //qualityIndex = graphicValue.value;
-        //settingData.qualityIndex = graphicValue.value;
-        //QualitySettings.SetQualityLevel(qualityIndex);  
+        settingData.uiSound = uiSlider.value;
+        uiSound.volume = settingData.uiSound;
+        
+    }
+
+    public void QualitySetting(int qualityIndex)
+    {
+        qualityIndex = qualityValue.value;
+        settingData.qualityIndex = qualityValue.value;
+        QualitySettings.SetQualityLevel(qualityIndex);  
     }
 
     public void FullScreenSetting(bool isFullScreen)
     {
-        //isFullScreen = fullScreenValue.isOn;
-        //settingData.isFullScreen = fullScreenValue.isOn;
-        //Screen.fullScreen = isFullScreen;   
+        isFullScreen = fullScreenValue.isOn;
+        settingData.isFullScreen = fullScreenValue.isOn;
+        Screen.fullScreen = isFullScreen;   
     }
 #endregion
 

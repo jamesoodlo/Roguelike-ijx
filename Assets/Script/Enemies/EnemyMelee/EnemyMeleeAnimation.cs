@@ -9,6 +9,9 @@ public class EnemyMeleeAnimation : MonoBehaviour
     EnemyMelee enemyMelee;
     UnityEngine.AI.NavMeshAgent navAi;
     EnemyWeapon enemyWeapon;
+    SoundFx soundFx;
+
+    public GameObject slashObj;
 
     void Start()
     {
@@ -17,13 +20,19 @@ public class EnemyMeleeAnimation : MonoBehaviour
         enemyMelee = GetComponentInParent<EnemyMelee>();
         navAi = GetComponentInParent<UnityEngine.AI.NavMeshAgent>();
         enemyWeapon = GetComponentInChildren<EnemyWeapon>();
+        soundFx = GetComponentInParent<SoundFx>();
 
         enemyWeapon.onAttack = false;
+
+        DisabledSlashFx();
     }
 
     void Update()
     {
-        
+        if(enemyMelee.isParried)
+        {
+            DisabledDamageCollider();
+        }
     }
 
 #region Animation Event
@@ -52,6 +61,27 @@ public class EnemyMeleeAnimation : MonoBehaviour
     public void EndParried()
     {
         enemyMelee.isParried = false;
+    }
+
+    public void EnebledSlashFx()
+    {
+        slashObj.SetActive(true);
+    }
+
+    public void DisabledSlashFx()
+    {
+        slashObj.SetActive(false);
+    }
+
+
+    public void SlashSfx()
+    {
+        soundFx.slashSfx.Play();
+    }
+
+    public void FootStepSfx()
+    {
+        soundFx.footStepSfx.Play();
     }
 #endregion
 }

@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     AnimationHandle animHandle;
     PlayerStats stats;
     Rigidbody rb;
+    SoundFx soundFx;
 
     public BaseStatus playerDataStat;
 
@@ -28,14 +29,14 @@ public class PlayerController : MonoBehaviour
     public int currentAttack = 0;
     private float timeSinceAttack;
 
-    [Header("Block & Parry")]
-    public GameObject shieldObj;
-    public bool isBlocking;
+    [Header("Guard & Parry")]
+    public GameObject guardBar;
+    public GameObject guardObj;
+    public bool isGuard;
     public bool isParried;
-    private float timeSinceBlock;
+    private float timeSinceGuard;
 
-    [Header("Skill Slash")]
-    public bool hasSlasher;
+    [Header("Skill DuckSlash")]
     public SlashSkill slashSkill;
     public bool onSlash;
     public bool isSlash;
@@ -44,31 +45,35 @@ public class PlayerController : MonoBehaviour
     public float maxSlashCdTime;
     public float slashCdTime;
     public bool canSlash = true;
+    private bool isSlashSfx = true;
 
-    [Header("Skill Barrier")]
-    public bool hasBarrier;
-    public GameObject barrierObj;
-    public bool isBarrier;
-    public float barrierTime;
-    public float maxBarrierTime;
-    public float maxBarrierCdTime;
-    public float barrierCdTime;
-    public bool canBarrier = true;
+    [Header("Skill SuperDuck")]
+    public bool isSuperDuck;
+    public float superDuckTime;
+    public float maxSuperDuckTime;
+    public float maxSuperDuckCdTime;
+    public float superDuckCdTime;
+    public bool canSuperDuck = true;
+    private bool setStatBuff = false;
 
     void Start()
     {
         inputHandle = GetComponent<InputHandle>();
         animHandle = GetComponent<AnimationHandle>();
+        soundFx = GetComponent<SoundFx>();
         stats = GetComponent<PlayerStats>();
         rb = GetComponent<Rigidbody>();
 
-        barrierObj.SetActive(false);
-        shieldObj.SetActive(false);
-        barrierCdTime = maxBarrierCdTime;
+        guardObj.SetActive(false);
+        superDuckCdTime = maxSuperDuckCdTime;
 
         speed = playerDataStat.speed;
         slashTime = maxSlashTime;
-        barrierTime = maxBarrierTime;
+        superDuckTime = maxSuperDuckTime;
+
+        playerDataStat.currentMaxHealth = playerDataStat.maxHealth;
+        playerDataStat.currentAttackDamage = playerDataStat.attackDamage; 
+        playerDataStat.currentSpeed = playerDataStat.speed;
     }
 
     void Update()
@@ -77,26 +82,25 @@ public class PlayerController : MonoBehaviour
 
         slashSkill.onSlash = onSlash;
 
-        hasBarrier = playerDataStat.hasBarrier;
-        hasSlasher = playerDataStat.hasSlasher;
-
         Attack();
-        Block();
+        Guard();
         SkillQ();
         SkillE(); 
 
-        if(isBlocking || isAttacking)
+        if(isGuard || isAttacking || stats.isHurt)
         {
-            //if blocking cant move
+            //if Guard cant move
         }
         else
         {
-            movePlayer();    
+            movePlayer(); 
         }
 
-        if(stats.currentStamina > 0) Rolling(); 
+        if(stats.currentStamina > 15f) Rolling(); 
+        if(stats.currentHealth <= 0) Destroy(this);
         
-
+        
+        guardBar.SetActive(isGuard);
     }
 
 #region Movement System
@@ -150,7 +154,7 @@ public class PlayerController : MonoBehaviour
 #region Combat System
     private void Attack()
     {
-        if(stats.currentStamina > 0 && !isRolling)
+        if(stats.currentStamina > 15f && !isRolling)
         {
             if (inputHandle.attack && timeSinceAttack > 0.5f)
             {
@@ -189,15 +193,15 @@ public class PlayerController : MonoBehaviour
         //StartCoroutine(setZeroAtkFw());
     }
 
-    private void Block()
+    private void Guard()
     {
-        if(inputHandle.block && stats.currentShield >= 1)
+        if(inputHandle.guard && stats.currentGuard > 0)
         {
-            timeSinceBlock += Time.deltaTime;
-            isBlocking = true;
-            shieldObj.SetActive(true);
+            timeSinceGuard += Time.deltaTime;
+            isGuard = true;
+            guardObj.SetActive(true);
                 
-            if(timeSinceBlock < 0.25f)
+            if(timeSinceGuard < 0.25f)
             {
                 isParried = true;
             }
@@ -206,43 +210,52 @@ public class PlayerController : MonoBehaviour
                 isParried = false;
             }
 
-            if(timeSinceBlock > 3.0f)
+            if(timeSinceGuard > 3.0f)
             {
-                isBlocking = false;
-                inputHandle.block = false;
-                shieldObj.SetActive(false);
+                isGuard = false;
+                inputHandle.guard = false;
+                guardObj.SetActive(false);
             }
 
-            if(stats.currentShield <= 0)
+            if(stats.currentGuard <= 0)
             {
-                timeSinceBlock = 0;
-                isBlocking = false;
-                inputHandle.block = false;
-                shieldObj.SetActive(false);
+                timeSinceGuard = 0;
+                isGuard = false;
+                inputHandle.guard = false;
+                guardObj.SetActive(false);
             }
         }
         else
         {
-            timeSinceBlock = 0;
+            timeSinceGuard = 0;
             isParried = false;
-            isBlocking = false;
-            shieldObj.SetActive(false);
+            isGuard = false;
+            guardObj.SetActive(false);
         }
     }
 #endregion
     
 #region Skill System
     private void SkillQ()
-    {
-        if(hasSlasher)
+    {   
+        if(playerDataStat.hasSlasher)
         {
             if(!canSlash)  slashCdTime -= Time.deltaTime;
-            if(isSlash) slashTime -= Time.deltaTime;
+            if(isSlash) 
+            {
+                slashTime -= Time.deltaTime;
+
+                if(isSlashSfx) 
+                    soundFx.slashbuffSfx.Play();
+                    isSlashSfx = false;
+                
+            }
 
             if(slashTime <= 0) 
             {
                 slashTime = 0;
                 isSlash = false;
+                isSlashSfx = true;
             }
 
             if(slashCdTime <= 0) 
@@ -275,37 +288,98 @@ public class PlayerController : MonoBehaviour
 
     private void SkillE()
     {
-        if(hasBarrier)
+        //Set Lv Skill
+        if(playerDataStat.superDuckLv == 1)
         {
-            if(!canBarrier)  barrierCdTime -= Time.deltaTime;
-            if(isBarrier) barrierTime -= Time.deltaTime;
+            maxSuperDuckTime = 3.0f;
+        }
+        else if(playerDataStat.superDuckLv == 2)
+        {
+            maxSuperDuckTime = 4.0f;
+        }
+        else if(playerDataStat.superDuckLv == 3)
+        {
+            maxSuperDuckTime = 5.0f;
+        }
+        else if(playerDataStat.superDuckLv == 4)
+        {
+            maxSuperDuckTime = 6.0f;
+        }
+        else if(playerDataStat.superDuckLv == 5)
+        {
+            maxSuperDuckTime = 7.0f;
+        }
+        else if(playerDataStat.superDuckLv == 6)
+        {
+            maxSuperDuckTime = 8.0f;
+        }
+        else if(playerDataStat.superDuckLv == 7)
+        {
+            maxSuperDuckTime = 9.0f;
+        }
+        else if(playerDataStat.superDuckLv == 8)
+        {
+            maxSuperDuckTime = 10.0f;
+        }
+        else if(playerDataStat.superDuckLv == 9)
+        {
+            maxSuperDuckTime = 11.0f;
+        }
+        else if(playerDataStat.superDuckLv == 10)
+        {
+            maxSuperDuckTime = 12.0f;
+        }
+        
+        //Set Status Buff
+        if(setStatBuff)
+        {
+            setStatBuff = false;
+            stats.currentHealth += playerDataStat.maxHealthBuff; 
+            playerDataStat.maxHealth += playerDataStat.maxHealthBuff;
+            playerDataStat.attackDamage += playerDataStat.attackDamageBuff;
+            playerDataStat.speed += playerDataStat.speedBuff;  
+        }
 
-            if(barrierTime <= 0) 
+        //Skill Mechanic
+        if(playerDataStat.hasSuperDuck)
+        {
+            if(!canSuperDuck) superDuckCdTime -= Time.deltaTime;
+
+            if(isSuperDuck) 
             {
-                barrierTime = 0;
-                barrierObj.SetActive(false);
-                isBarrier = false;
+                superDuckTime -= Time.deltaTime;
             }
 
-            if(barrierCdTime <= 0) 
+            if(superDuckTime <= 0) 
             {
-                canBarrier = true;
-                barrierCdTime = maxBarrierCdTime;
+                superDuckTime = 0;
+
+                playerDataStat.maxHealth = playerDataStat.currentMaxHealth;
+                playerDataStat.attackDamage = playerDataStat.currentAttackDamage;
+                playerDataStat.speed = playerDataStat.currentSpeed;  
+
+                isSuperDuck = false;
             }
 
-            if(canBarrier) barrierTime = maxBarrierTime;
-
-            if(inputHandle.skillE && canBarrier && !isAttacking && barrierCdTime == maxBarrierCdTime)
+            if(superDuckCdTime <= 0) 
             {
-                if(canBarrier)
+                canSuperDuck = true;
+                superDuckCdTime = maxSuperDuckCdTime;
+            }
+
+            if(canSuperDuck) superDuckTime = maxSuperDuckTime;
+
+            if(inputHandle.skillE && canSuperDuck && !isAttacking && superDuckCdTime == maxSuperDuckCdTime && !isSuperDuck)
+            {
+                if(canSuperDuck)
                 {
-                    isBarrier = true;
+                    isSuperDuck = true;
+
+                    setStatBuff = true;
                     
-                    barrierObj.SetActive(true);
+                    canSuperDuck = false;
 
-                    canBarrier = false;
-
-                    animHandle.BarrierAnimation();
+                    animHandle.SuperDuckAnimation();
                 }
             }
             else

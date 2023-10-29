@@ -7,6 +7,9 @@ public class SettingData : ScriptableObject
 {
     [Header("All Setting")]
     public float musicSound;
+    public float ambientSound;
+    public float effectSound;
+    public float uiSound;
     public int qualityIndex;
     public bool isFullScreen;
 

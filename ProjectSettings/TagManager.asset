@@ -8,7 +8,6 @@ TagManager:
   - EnemyDmg
   - BulletEnemy
   - Environment
-  - Heal
   - Enemy
   - ItemBox
   - Barrier
@@ -16,7 +15,7 @@ TagManager:
   - Portal
   - SlashProjectile
   - Exp
-  - Point
+  - Eggs
   layers:
   - Default
   - TransparentFX

@@ -33,6 +33,7 @@ Material:
     RenderType: Transparent
   disabledShaderPasses:
   - DepthOnly
+  - SHADOWCASTER
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -50,13 +51,13 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha: 0.5
+    - _Alpha: 1
     - _AlphaClip: 0
     - _Blend: 0
-    - _CastShadows: 1
+    - _CastShadows: 0
     - _Cull: 2
     - _DstBlend: 10
-    - _FrsnalPower: 1.25
+    - _FrsnalPower: 1.5
     - _QueueControl: 0
     - _QueueOffset: 0
     - _SrcBlend: 5
@@ -65,5 +66,5 @@ Material:
     - _ZWrite: 0
     - _ZWriteControl: 0
     m_Colors:
-    - _Color: {r: 135.58704, g: 0.70987976, b: 0.70987976, a: 0.19607843}
+    - _Color: {r: 0, g: 2.9960785, b: 0.23529412, a: 1}
   m_BuildTextureStacks: []

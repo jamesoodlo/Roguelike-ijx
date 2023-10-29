@@ -5,6 +5,7 @@ using UnityEngine;
 public class Interaction : MonoBehaviour
 {
     InputHandle inputHandle;
+    SoundFx soundFx;
     public bool isInteract;
     public bool canInteract;
     public float distanceFromTarget;
@@ -13,11 +14,12 @@ public class Interaction : MonoBehaviour
     public float maximumDetectionAngle = 50;
     public float minimumDetectionAngle = -50;
     public LayerMask detectionLayer;
-    public Portal portalObj;
+    public Items items;
     
     void Start()
     {
         inputHandle = GetComponent<InputHandle>();
+        soundFx = GetComponent<SoundFx>();
     }
 
     void Update()
@@ -33,32 +35,43 @@ public class Interaction : MonoBehaviour
 
         for (int i = 0; i < colliders.Length; i++)
         {
-            Portal portal = colliders[i].transform.GetComponent<Portal>();
+            Items item = colliders[i].transform.GetComponent<Items>();
             
-            if(portal != null)
+            if(item != null)
             {
-                Vector3 targetDirection = portal.transform.position - transform.position;
+                Vector3 targetDirection = item.transform.position - transform.position;
                 viewableAngle = Vector3.Angle(targetDirection, transform.forward);
-                distanceFromTarget = Vector3.Distance(portal.transform.position, this.transform.position);
+                distanceFromTarget = Vector3.Distance(item.transform.position, this.transform.position);
 
                 if(viewableAngle > minimumDetectionAngle && viewableAngle < maximumDetectionAngle)
                 {
-                    portalObj = portal;
+                    items = item;
                 }
                 else
                 {
-                    portalObj = null;
+                    items = null;
                 }
+            }
+            else
+            {
+                distanceFromTarget = 0;
             }
         }
     }
 
     public void Interact()
-    {
-        if(portalObj != null && distanceFromTarget <= 2) 
+    { 
+        if(items != null && distanceFromTarget <= 2) 
         {
             canInteract = true;
-            portalObj = GetComponent<Portal>();
+            
+            items = GetComponent<Items>();
+
+            if(canInteract && isInteract) soundFx.pickUpSfx.Play();
+        }
+        else
+        {
+            canInteract = false;
         }
     }
 }

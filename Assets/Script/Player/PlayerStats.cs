@@ -9,147 +9,105 @@ public class PlayerStats : MonoBehaviour
     InputHandle inputHandle;
     AnimationHandle animHandle;
     PlayerController playerControll;
-
-    EnemyWeapon enemyWeapon;
+    Inventory inven;
+    SoundFx soundFx;
 
     public BaseStatus playerDataStat;
+    public UIManager uiManager;
+    public GameObject hurtPanel;
+
+    public bool isHurt;
+    public float timeSinceLastHurt = 0;
 
     public float currentHealth;
-    public int currentStamina;
-    public int regenStaminaRate = 1; 
+    public float currentStamina;
+    public float regenStaminaRate; 
     private float timeSinceLastRegen = 0f;
-    public GameObject[] staminaPoint;
     
-    private bool isHurt = false;
-
-    public float currentShield;
-    public float regenShieldRate = 1;
-    private float timeSinceLastRegenShield = 0f;
+    public float currentGuard;
+    public float regenGuardRate = 5;
+    private float timeSinceLastRegenGuard = 0f;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
-        inputHandle = GetComponent<InputHandle>();
+        inven = GetComponent<Inventory>();
+        soundFx = GetComponent<SoundFx>();
         animHandle = GetComponent<AnimationHandle>();
+        inputHandle = GetComponent<InputHandle>();
         playerControll = GetComponent<PlayerController>();
 
         currentHealth = playerDataStat.maxHealth;
         currentStamina = playerDataStat.maxStamina;
-        currentShield = playerDataStat.maxShield;
+        regenStaminaRate = playerDataStat.maxStaminaRegen;
+        currentGuard = playerDataStat.maxGuard;
     }
 
     void Update()
     {
-        DrainStaminaPoint();
         RegenrateStamina();
-        RegenrateShield();
+        RegenrateGuard();
         ExpLevel();
+
+        hurtPanel.SetActive(isHurt);
 
         if(isHurt)
         {
-            inputHandle.move = Vector2.zero;
+            timeSinceLastHurt += Time.deltaTime;
             inputHandle.attack = false;
+
+            if(timeSinceLastHurt > 0.4f)
+            {
+                isHurt = false;
+                timeSinceLastHurt = 0;
+            }
         }
         else
         {
-
+            timeSinceLastHurt = 0;
         }
 
-        if(currentHealth < 0) currentHealth = 0;
-        if(currentShield < 0) currentShield = 0;
-        if(currentHealth > playerDataStat.maxHealth) currentHealth = playerDataStat.maxHealth; 
+        if(currentHealth <= 0) 
+        {
+            Time.timeScale = 0;
+    
+            currentHealth = 0;
+            uiManager.lastStageText.SetActive(false);
+            uiManager.gameOverPanel.SetActive(true);
+        }
 
-        enemyWeapon = FindObjectOfType<EnemyWeapon>();
+        if(currentStamina < 0) currentStamina = 0;
+        if(currentGuard < 0) currentGuard = 0;
+        if(currentHealth > playerDataStat.maxHealth) currentHealth = playerDataStat.maxHealth; 
+        if(currentStamina > playerDataStat.maxStamina) currentStamina = playerDataStat.maxStamina;
+        if(currentGuard > playerDataStat.maxGuard) currentGuard = playerDataStat.maxGuard;
     }
 
     public void RegenrateStamina()
     { 
+        timeSinceLastRegen += Time.deltaTime;
+
         if (currentStamina < playerDataStat.maxStamina)
-        {
-            timeSinceLastRegen += Time.deltaTime;
-
-            if (timeSinceLastRegen >= 1.5f && !playerControll.isAttacking)
+        { 
+            if (timeSinceLastRegen >= 1.0f)
             {
-                int regenAmount = Mathf.Min(playerDataStat.maxStamina - currentStamina, regenStaminaRate);
-                currentStamina += regenAmount;
-                timeSinceLastRegen = 0f;
+                currentStamina += regenStaminaRate * Time.deltaTime;
             }
         }
     }
 
-    public void RegenrateShield()
+    public void RegenrateGuard()
     { 
-        if (currentShield < playerDataStat.maxShield)
+        if (currentGuard < playerDataStat.maxGuard)
         {
-            timeSinceLastRegenShield += Time.deltaTime;
+            timeSinceLastRegenGuard += Time.deltaTime;
 
-            if (timeSinceLastRegenShield >= 2.0f)
+            if (timeSinceLastRegenGuard >= 1.5f)
             {
-                float regenAmount = Mathf.Min(playerDataStat.maxShield - currentShield, regenShieldRate);
-                currentShield += regenAmount;
-                timeSinceLastRegenShield = 0f;
+                currentGuard += regenGuardRate * Time.deltaTime;
             }
         }
-    }
-    
-    private void DrainStaminaPoint()
-    {
-        if(currentStamina == 5)
-        {
-            staminaPoint[0].SetActive(true);
-            staminaPoint[1].SetActive(true);
-            staminaPoint[2].SetActive(true);
-            staminaPoint[3].SetActive(true);
-            staminaPoint[4].SetActive(true);
-        }
-        else if(currentStamina == 4)
-        {
-            staminaPoint[0].SetActive(false);
-            staminaPoint[1].SetActive(true);
-            staminaPoint[2].SetActive(true);
-            staminaPoint[3].SetActive(true);
-            staminaPoint[4].SetActive(true);
-        }
-        else if(currentStamina == 3)
-        {
-            staminaPoint[0].SetActive(false);
-            staminaPoint[1].SetActive(false);
-            staminaPoint[2].SetActive(true);
-            staminaPoint[3].SetActive(true);
-            staminaPoint[4].SetActive(true);
-        }
-        else if(currentStamina == 2)
-        {
-            staminaPoint[0].SetActive(false);
-            staminaPoint[1].SetActive(false);
-            staminaPoint[2].SetActive(false);
-            staminaPoint[3].SetActive(true);
-            staminaPoint[4].SetActive(true);
-        }
-        else if(currentStamina == 1)
-        {
-            staminaPoint[0].SetActive(false);
-            staminaPoint[1].SetActive(false);
-            staminaPoint[2].SetActive(false);
-            staminaPoint[3].SetActive(false);
-            staminaPoint[4].SetActive(true);
-        }
-        else
-        {
-            staminaPoint[0].SetActive(false);
-            staminaPoint[1].SetActive(false);
-            staminaPoint[2].SetActive(false);
-            staminaPoint[3].SetActive(false);
-            staminaPoint[4].SetActive(false);
-        }
-    }
-
-    public void GetHurt()
-    {
-        anim.SetTrigger("Hurt");
-
-        StartCoroutine(HurtDontMove());
     }
 
     public void ExpLevel()
@@ -169,39 +127,40 @@ public class PlayerStats : MonoBehaviour
         rb.velocity = Vector3.zero;
     }
 
-    IEnumerator HurtDontMove(float delay = 0.5f)
-    {
-        isHurt = true;
-        yield return new WaitForSeconds(delay);
-        isHurt = false;
-    }
-
-    private void OnTriggerEnter(Collider other) 
+    private void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.tag == "EnemyDmg")
         {
-            if(playerControll.isBlocking && enemyWeapon.onAttack && !playerControll.isParried)
+            if(other.GetComponent<EnemyWeapon>().onAttack && !inven.isBarrier && !playerControll.isSuperDuck && !playerControll.isGuard && !playerControll.isParried && !playerControll.isRolling)
+            {
+                currentHealth -= other.GetComponent<EnemyWeapon>().damage;
+                anim.SetTrigger("Hurt");
+                soundFx.hurtSfx.Play();
+            }
+            else if(other.GetComponent<EnemyWeapon>().onAttack && playerControll.isGuard && !playerControll.isParried && !playerControll.isRolling)
             {  
-                currentHealth -= enemyWeapon.damage * 50 /100;
-                currentShield -= enemyWeapon.damage;
+                currentHealth -= other.GetComponent<EnemyWeapon>().damage * 65 /100;
+                currentGuard -= other.GetComponent<EnemyWeapon>().damage;
 
                 float knockbackSpeed = 4.5f;
                 rb.AddForce(-transform.forward * knockbackSpeed, ForceMode.Impulse);
 
+                soundFx.blockingSfx.Play();
+
                 anim.Play("Blocked");
-                
+                    
                 StartCoroutine(ResetKnockBack());
             }
-            else if(enemyWeapon.onAttack)
+            else if(other.GetComponent<EnemyWeapon>().onAttack && playerControll.isSuperDuck)
             {
-                currentHealth -= enemyWeapon.damage;
-                GetHurt();
+                soundFx.hurtSfx.Play();
+                currentHealth -= other.GetComponent<EnemyWeapon>().damage * 55 / 100;
             }
-            else if(playerControll.isBarrier && enemyWeapon.onAttack)
+            else if(other.GetComponent<EnemyWeapon>().onAttack && inven.isBarrier)
             {
-                currentHealth -= enemyWeapon.damage * 80 / 100;
+                currentHealth -= other.GetComponent<EnemyWeapon>().damage * 65 / 100;
             }
-            else if(playerControll.isRolling && enemyWeapon.onAttack || playerControll.isParried && enemyWeapon.onAttack)
+            else if(other.GetComponent<EnemyWeapon>().onAttack && other.GetComponent<EnemyWeapon>().isParried)
             {
                 //no dmg
             }
@@ -209,29 +168,7 @@ public class PlayerStats : MonoBehaviour
             {
                 //no dmg
             }
-            
         }
-        else
-        {
-            //no dmg
-        }
-
-        if(other.gameObject.tag == "BulletEnemy")
-        {
-            if(playerControll.isBarrier)
-            {
-                //no dmg
-            }
-            else if(playerControll.isBlocking)
-            {
-                currentShield -= other.GetComponent<bullet>().damage;
-                anim.Play("Blocked");
-            }
-            else
-            {
-                currentHealth -= other.GetComponent<bullet>().damage;
-            }
-        } 
         else
         {
             //no dmg
@@ -241,20 +178,5 @@ public class PlayerStats : MonoBehaviour
         {
             playerDataStat.exp += 0.5f;
         }
-
-        if(other.gameObject.tag == "Point")
-        {
-            playerDataStat.currentPoint += other.GetComponent<Point>().getPointValue;
-        }
     }
-
-    private void OnTriggerStay(Collider other) 
-    {
-        if(other.gameObject.tag == "Heal")
-        {
-            currentHealth += 3.5f * Time.deltaTime;
-        }
-    
-    }
-
 }

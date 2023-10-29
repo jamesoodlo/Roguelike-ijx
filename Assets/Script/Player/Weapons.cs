@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Weapons : MonoBehaviour
 {
+    SoundFx soundFx;
     public BaseStatus playerDataStat;
     public bool onAttack = false;
     public float damage;
@@ -12,11 +13,14 @@ public class Weapons : MonoBehaviour
 
     void Start()
     {
+        soundFx = GetComponentInParent<SoundFx>();
+
         damage = playerDataStat.attackDamage;
     }
 
     void Update()
     {
+
         if(hitCount > 0)
         {
             timeSinceHit += Time.deltaTime;
@@ -47,11 +51,19 @@ public class Weapons : MonoBehaviour
 
     private void OnTriggerEnter(Collider other) 
     {
-        if(other.tag == "Enemy")
+        if(other.gameObject.tag == "Enemy")
         {
             if(onAttack)
             {
                 hitCount += 1;
+            }    
+        } 
+
+        if(other.gameObject.tag == "ItemBox")
+        {
+            if(onAttack)
+            {
+                soundFx.woodBoxSfx.Play();
             }    
         } 
     }

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class SlashProjectile : MonoBehaviour
 {
+    AudioSource audio;
+    
     public BaseStatus playerDataStat;
     public float damage;
     public float Speed = 0.1f;
@@ -12,7 +14,11 @@ public class SlashProjectile : MonoBehaviour
 
     void Start()
     {
+        audio = GetComponent<AudioSource>();
         startTime = Time.time;
+        damage = playerDataStat.attackDamage;
+
+        audio.Play();
     }
 
     void Update()

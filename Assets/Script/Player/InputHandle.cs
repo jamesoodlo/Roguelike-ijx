@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class InputHandle : MonoBehaviour
 {
-    public bool attack, dash, block, skillQ, skillE, interaction;
+    public bool attack, dash, guard, skillQ, skillE, interaction, item1, item2;
     public Vector2 move, mouseLook;
     public Vector3 rotationTarget;
 
@@ -35,19 +35,19 @@ public class InputHandle : MonoBehaviour
         }
     }
 
-    public void OnBlock(InputAction.CallbackContext context)
+    public void OnGuard(InputAction.CallbackContext context)
     {
         if(context.started)
         {
-            block = true;
+            guard = true;
         }
         if(context.performed)
         {
-            block = true;
+            guard = true;
         }
         if(context.canceled)
         {
-            block = false;
+            guard = false;
         }
     }
 
@@ -112,6 +112,38 @@ public class InputHandle : MonoBehaviour
         if(context.canceled)
         {
             interaction = false;
+        }
+    }
+
+    public void OnItem1(InputAction.CallbackContext context)
+    {
+        if(context.started)
+        {
+            item1 = true;
+        }
+        if(context.performed)
+        {
+            item1 = true;
+        }
+        if(context.canceled)
+        {
+            item1 = false;
+        }
+    }
+
+    public void OnItem2(InputAction.CallbackContext context)
+    {
+        if(context.started)
+        {
+            item2 = true;
+        }
+        if(context.performed)
+        {
+            item2 = true;
+        }
+        if(context.canceled)
+        {
+            item2 = false;
         }
     }
 }

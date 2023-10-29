@@ -8,9 +8,10 @@ public class EnemyMeleeStats : MonoBehaviour
     Animator anim;
     EnemyMelee enemyMelee;
     Slider healthBar;
-    Weapons weapon;
+    SoundFx soundFx;
 
     public EnemyBaseStatus enemyDataStat;
+    public Collider collider;
     public float currentHealth;
 
     [Header("Exp & Point")]
@@ -24,6 +25,7 @@ public class EnemyMeleeStats : MonoBehaviour
     {
         enemyMelee = GetComponent<EnemyMelee>();
         anim = GetComponentInChildren<Animator>();
+        soundFx = GetComponent<SoundFx>();
         healthBar = GetComponentInChildren<Slider>();
 
         currentHealth = enemyDataStat.maxHealth;
@@ -34,15 +36,13 @@ public class EnemyMeleeStats : MonoBehaviour
     {
         SetHealthBar();
 
-        weapon = FindObjectOfType<Weapons>();
-
         if(currentHealth <= 0)
         {
-            Instantiate(Exp, transform.position, transform.rotation);
+            anim.Play("Death");
 
-            if(getDropRate == 0) Instantiate(Point, transform.position, transform.rotation);
-            
-            Destroy(this.gameObject);
+            collider.enabled = false;
+
+            StartCoroutine(DeathDelay());
         }
     }
 
@@ -52,20 +52,40 @@ public class EnemyMeleeStats : MonoBehaviour
         healthBar.value = currentHealth;
     }
 
+    IEnumerator DeathDelay(float delay = 1.99f)
+    {
+        yield return new WaitForSeconds(delay);
+
+        Instantiate(Exp, transform.position, transform.rotation);
+
+        if(getDropRate == 0) Instantiate(Point, transform.position, transform.rotation);
+
+        Destroy(this.gameObject);
+    }
+
     private void OnTriggerEnter(Collider other) 
     {
-        if(other.tag == "Weapons" || other.tag == "SlashProjectile")
+        if(other.tag == "Weapons")
         {
-            if(weapon.onAttack)
+            if(other.GetComponent<Weapons>().onAttack)
             {
                 enemyMelee.Knockback();
-                currentHealth -= weapon.damage;
+                currentHealth -= other.GetComponent<Weapons>().damage;
                 anim.Play("Hurt");
+                soundFx.hurtSfx.Play();
             }
             else
             {
 
             }
+        }
+
+        if(other.tag == "SlashProjectile")
+        {
+            currentHealth -= other.GetComponent<SlashProjectile>().damage;
+            enemyMelee.Knockback();
+            anim.Play("Hurt");
+            soundFx.hurtSfx.Play();
         }
 
         if(other.tag == "Barrier")

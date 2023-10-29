@@ -5,7 +5,6 @@ using UnityEngine;
 public class EnemiesSpawner : MonoBehaviour
 {
     public StageData stageData;
-    public int[] enemiesPattern;
     public int numOfEnemies;
     public Transform[] spawnPoint;
     public Transform[] getSpawnPoint;
@@ -60,10 +59,5 @@ public class EnemiesSpawner : MonoBehaviour
             int randomPrefabIndex = Random.Range(0, enemiesPrefabs.Length);
             GameObject instantiatedObject = Instantiate(enemiesPrefabs[randomPrefabIndex], getSpawnPoint[i].position, Quaternion.identity);
         }
-    }
-
-    private void SetPattern()
-    {
-        
     }
 }
